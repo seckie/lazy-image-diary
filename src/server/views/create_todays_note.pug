@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1 Let's make image diary
+  p Sign in user: #{user.name}
+  p
+    input(type="file" name="imagefiles[]" id="imagefiles" multiple accept=".jpg,.jpeg,.png,.gif")
+    a(href="/") Back to index
+  #list
+
+  script(src="https://code.jquery.com/jquery-3.3.1.min.js")
+  script(src="/javascripts/script.js")
