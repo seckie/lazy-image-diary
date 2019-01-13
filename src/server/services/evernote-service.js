@@ -91,23 +91,39 @@ class EvernoteService {
   }
 
   searchNotesWithTitle (noteStore, title) {
-    const filter = new Evernote.NoteStore.NoteFilter({
-      words: `notebook:${NOTEBOOK_NAME} intitle:${title}`
+    return new Promise((resolve, reject) => {
+      const filter = new Evernote.NoteStore.NoteFilter({
+        words: `notebook:${NOTEBOOK_NAME} intitle:${title}`
+      });
+      const spec = new Evernote.NoteStore.NotesMetadataResultSpec({
+        includeTitle: true,
+        includeContentLength: false,
+        includeCreated: true,
+        includeUpdated: true,
+        includeDeleted: false,
+        includeUpdateSequenceNum: false,
+        includeNotebookGuid: true,
+        includeTagGuids: false,
+        includeAttributes: true,
+        includeLargestResourceMime: false,
+        includeLargestResourceSize: false,
+      });
+      noteStore.findNotesMetadata(filter, 0, 100, spec).then((res) => {
+        const promises = res.notes.map((note) => {
+          return new Promise((resolve2, reject2) => {
+            noteStore.getNote(note.guid, false, true, false, false).then((noteData) => {
+              console.log(noteData);
+              note.resources = noteData.resources;
+              resolve2(note);
+            }, reject2);
+          });
+        });
+        Promise.all(promises).then((notes) => {
+          res.notes = notes;
+          resolve(res);
+        }, reject);
+      });
     });
-    const spec = new Evernote.NoteStore.NotesMetadataResultSpec({
-      includeTitle: true,
-      includeContentLength: false,
-      includeCreated: true,
-      includeUpdated: true,
-      includeDeleted: false,
-      includeUpdateSequenceNum: false,
-      includeNotebookGuid: true,
-      includeTagGuids: false,
-      includeAttributes: true,
-      includeLargestResourceMime: false,
-      includeLargestResourceSize: false,
-    });
-    return noteStore.findNotesMetadata(filter, 0, 100, spec);
   }
 
   createTodaysNoteWithImage (oauthToken, data) {
@@ -120,13 +136,6 @@ class EvernoteService {
   }
 
   makeImageNote(oauthToken, parentNotebook, file) {
-    const noteData = {
-      title: 'Todays image note',
-      body: 'Hi! This is today.\n Foo Bar.',
-      body2: 'Nothing.',
-      file: file
-    };
-
     // - Search a note of today
     // - If the note was found
     //     - Get the body
@@ -163,37 +172,47 @@ class EvernoteService {
         const notes = res.notes;
         if (notes && notes[0]) {
           // Already the note exists
+          const theNote = notes[0];
           const noteStore = this.getNoteStore(oauthToken);
-          const guid = notes[0].guid;
-          noteStore.getNoteContent(guid).then((content) => {
+          noteStore.getNoteContent(theNote.guid).then((content) => {
             const dom = new JSDOM(content);
-            const $times = dom.window.document.querySelectorAll('p.time');
+            const $times = dom.window.document.querySelectorAll('p[title="time"]');
             let hmsTimes = [];
             for (let i = 0, l = $times.length; i<l; i++) {
-              hmsTimes.push($times.textContent);
+              hmsTimes.push($times[i].textContent);
             }
+            // 新しいエントリーを挿入すべきノート中の位置
             const index = dateService.getIndexOfInsertPosition(hmsTimes, file.lastModified);
-
-            const targetNode = $times[index];
+            // 新しいノードを作る
             const parentNode = dom.window.document.querySelector('en-note');
             const newTime = newMoment.format('HH:mm:ss');
             const newNode = dom.window.document.createElement('div');
             const newTimeNode = dom.window.document.createElement('p');
             const newMediaNode = dom.window.document.createElement('p');
-            newNode.className = 'section';
+            newNode.setAttribute('title', 'section');
             newTimeNode.innerHTML = newTime;
             newMediaNode.innerHTML = nMedia;
             newNode.appendChild(newTimeNode);
             newNode.appendChild(newMediaNode);
+            // ノードの挿入
+            const targetNode = $times[index];
             parentNode.insertBefore(newNode, targetNode);
 
             // update content
             let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
             nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
             nBody += dom.window.document.body.innerHTML;
+            console.log(nBody);
+
+            // Create note object
+            const newNote = new Evernote.Types.Note();
+            newNote.title = theNote.title;
+            newNote.content = nBody;
+            newNote.resources = theNote.resources.concat(resource);
+            newNote.guid = theNote.guid;
+
             // Update the note
-            // ...
-            // ...
+            noteStore.updateNote(newNote).then(resolve, reject);
           }, reject)
         } else {
           // Make new note
@@ -202,15 +221,15 @@ class EvernoteService {
           let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
           nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
           nBody += '<en-note>';
-          nBody += '<div class="section">';
-          nBody += `<p class="time">${d.format('HH:mm:ss')}</p>`;
+          nBody += '<div title="section">';
+          nBody += `<p title="time">${newMoment.format('HH:mm:ss')}</p>`;
           nBody += `<p>${nMedia}</p>`;
           nBody += '</div>';
           nBody += "</en-note>";
 
           // Create note object
           const ourNote = new Evernote.Types.Note();
-          ourNote.title = noteData.title;
+          ourNote.title = newMoment.format('YYYY-MM-DD');
           ourNote.content = nBody;
           ourNote.resources = [resource];
 
@@ -220,9 +239,8 @@ class EvernoteService {
           }
 
           // Attempt to create note in Evernote account (returns a Promise)
-          return noteStore.createNote(ourNote);
+          noteStore.createNote(ourNote).then(resolve, reject);
         }
-        resolve(notes);
       }, reject);
     });
   }
