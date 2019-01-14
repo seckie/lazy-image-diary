@@ -34,7 +34,7 @@ router.get('/oauth_callback', (req, res, next) => {
     req.session.oauthToken = oauthToken;
     evernoteService.getUser(oauthToken).then((user) => {
       req.session.user = user;
-      res.render('create_todays_note', {user: user});
+      res.redirect('/create_todays_note');
     }, (error) => {
       res.redirect('/');
     })
