@@ -7,7 +7,7 @@ function handleFileSelect (e) {
   if (!target) { return; }
   var files = target.files;
   if (!files) { return; }
-  var promises = [];
+  var dataset = [];
   for (var i = 0, l = files.length; i<l; i++) {
     var f = files[i];
     if (!f.type.match('image.*')) { continue; }
@@ -17,22 +17,26 @@ function handleFileSelect (e) {
     var formData = new FormData();
     formData.append('fileData', f);
     formData.append('fileLastModified', f.lastModified);
-    promises.push(promiseRequest(formData, i));
+    dataset .push(formData);
   }
-  return Promise.all(promises);
+  loopRequest(dataset, 0)
 }
 
-function promiseRequest(data, index) {
-  return new Promise((resolve, reject) => {
-    request(data, function (res) {
-      document.querySelectorAll('p.media')[index].classList.remove('media--uploading');
-      resolve();
-    }, function (err) {
-      console.error(err.message);
-      document.querySelectorAll('p.media')[index].classList.remove('media--uploading');
-      document.querySelectorAll('p.media')[index].classList.add('media--error');
-      reject();
-    });
+function loopRequest(dataset, index) {
+  request(dataset[index], function (res) {
+    document.querySelectorAll('p.media')[index].classList.remove('media--uploading');
+    index ++;
+    if (index < dataset.length) {
+      loopRequest(dataset, index);
+    }
+  }, function (err) {
+    console.error(err.message);
+    document.querySelectorAll('p.media')[index].classList.remove('media--uploading');
+    document.querySelectorAll('p.media')[index].classList.add('media--error');
+    index ++;
+    if (index < dataset.length) {
+      loopRequest(dataset, index);
+    }
   });
 }
 
