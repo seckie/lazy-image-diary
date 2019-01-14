@@ -6,3 +6,31 @@ body {
 a {
   color: #00B7FF;
 }
+
+#list {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0 0 0 10px;
+}
+.media {
+  align-content: flex-start;
+  align-items: flex-start;
+  width: 250px;
+  height: 250px;
+  margin: 0 10px 10px 0;
+  padding: 0;
+  text-align: center;
+  align-content: center;
+}
+.media img {
+  max-width: 250px;
+  max-height: 250px;
+  border: 2px solid #eee;
+}
+.media.media--uploading {
+  opacity: .5;
+}
+.media.media--uploading {
+  border: 2px dotted #0099ff;
+}
