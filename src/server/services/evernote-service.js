@@ -237,7 +237,7 @@ class EvernoteService {
 
           // Create note object
           const ourNote = new Evernote.Types.Note();
-          ourNote.title = newMoment.format('YYYY-MM-DD');
+          ourNote.title = `${newMoment.format('YYYY-MM-DD')} [${newMoment.format('ddd').toUpperCase()}]`;
           ourNote.content = nBody;
           ourNote.resources = [resource];
 
