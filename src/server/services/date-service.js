@@ -13,7 +13,7 @@ const dateService = {
     }
     let index = hmsTimes.length;
     for (let i = 0, l = hmsTimes.length; i<l; i++) {
-      const m = this.makeNewMomentFromHMS(hmsTimes[i]);
+      const m = this.makeHMSChangedNewMoment(newMoment, hmsTimes[i]);
       if (newMoment.valueOf() < m.valueOf()) {
         index = i;
         break;
@@ -22,8 +22,8 @@ const dateService = {
     return index;
   },
 
-  makeNewMomentFromHMS (hms) {
-    const m = moment();
+  makeHMSChangedNewMoment (currentMoment, hms) {
+    const m = moment(currentMoment.valueOf());
     const hmsArray = hms.split(':');
     if (!hmsArray[1] || !hmsArray[2]) {
       throw new Error('"hms" argument must be valid "HH:mm:ss" format for moment.js');

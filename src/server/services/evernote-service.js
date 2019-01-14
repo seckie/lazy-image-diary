@@ -190,13 +190,21 @@ class EvernoteService {
             const newTimeNode = dom.window.document.createElement('p');
             const newMediaNode = dom.window.document.createElement('p');
             newNode.setAttribute('title', 'section');
+            newTimeNode.setAttribute('title', 'time')
+            newMediaNode.setAttribute('title', 'media')
             newTimeNode.innerHTML = newTime;
             newMediaNode.innerHTML = nMedia;
             newNode.appendChild(newTimeNode);
             newNode.appendChild(newMediaNode);
             // ノードの挿入
-            const targetNode = $times[index];
-            parentNode.insertBefore(newNode, targetNode);
+            if ($times[index]) {
+              // 途中に挿入
+              const targetNode = $times[index].parentNode;
+              parentNode.insertBefore(newNode, targetNode);
+            } else {
+              // 末尾へ挿入
+              parentNode.appendChild(newNode);
+            }
 
             // update content
             let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -223,7 +231,7 @@ class EvernoteService {
           nBody += '<en-note>';
           nBody += '<div title="section">';
           nBody += `<p title="time">${newMoment.format('HH:mm:ss')}</p>`;
-          nBody += `<p>${nMedia}</p>`;
+          nBody += `<p title="media">${nMedia}</p>`;
           nBody += '</div>';
           nBody += "</en-note>";
 

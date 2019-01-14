@@ -34,7 +34,7 @@ describe('date-service.js', () => {
         dateService.getIndexOfInsertPosition([], 'foo');
       }).toThrow();
     });
-    it('return valid index', () => {
+    it('test return value: case 1', () => {
       const hmsArr1 = ['09:01:00', '10:10:00', '10:40:00'];
       const m = moment();
       m.hours(8);
@@ -49,16 +49,36 @@ describe('date-service.js', () => {
       m3.minutes(20);
       expect(dateService.getIndexOfInsertPosition(hmsArr1, m3.valueOf())).toBe(2);
     });
+    it('test return value: case 2', () => {
+      const hmsArr = ['09:00:10'];
+      const m = moment();
+      m.hours(9);
+      m.minutes(0);
+      m.seconds(9);
+      expect(dateService.getIndexOfInsertPosition(hmsArr, m.valueOf())).toBe(0);
+    });
+    it('test return value: case 3', () => {
+      const hmsArr = ['12:24:01', '12:24:06'];
+      const m = moment(1547349848972);
+      expect(dateService.getIndexOfInsertPosition(hmsArr, m.valueOf())).toBe(2);
+    });
   });
 
   describe('makeNewMomentFromHMS()', () => {
     it('argument should be valid date format for moment.js', () => {
+      const m = moment();
       expect(() => {
-        dateService.makeNewMomentFromHMS('foo');
+        dateService.makeHMSChangedNewMoment(m, 'foo');
       }).toThrow('"hms" argument must be valid "HH:mm:ss" format for moment.js');
     })
     it('return moment.js object of the argument', () => {
-      expect(dateService.makeNewMomentFromHMS('10:05:01').format('HHmmss')).toBe('100501');
+      const m = moment();
+      expect(dateService.makeHMSChangedNewMoment(m, '10:05:01').format('HHmmss')).toBe('100501');
+      const m2 = moment();
+      m2.hours(12);
+      m2.minutes(24);
+      m2.seconds(1);
+      expect(dateService.makeHMSChangedNewMoment(m, '12:24:01').valueOf()).toBe(m2.valueOf());
     })
   });
 });
