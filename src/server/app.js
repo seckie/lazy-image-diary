@@ -6,12 +6,18 @@ const logger = require('morgan');
 const path = require('path');
 const session = require('express-session');
 
+const basicAuth = require('./middlewares/basicAuth');
 const secret = require('./config/secret.js');
 const {MAX_REQUEST_SIZE} = require('./config/app-config');
 
 const indexRouter = require('./routes/index');
 
 const app = express();
+
+// basic auth
+if (app.get('env') === 'production') {
+  app.use(basicAuth);
+}
 
 // session
 const sessionConfig = {
@@ -65,3 +71,4 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+
