@@ -16,7 +16,9 @@ const upload = multer({
 });
 
 router.get('/', (req, res, next) => {
-  res.render('index', { title: 'Express' });
+  res.render('index', {
+    title: 'Lazy Image Diary'
+  });
 });
 router.get('/oauth_signin', (req, res, next) => {
   evernoteService.getRequestToken(CALLBACK_URL).then(({oauthToken, oauthTokenSecret, authorizeUrl}) => {
