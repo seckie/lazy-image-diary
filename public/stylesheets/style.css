@@ -53,3 +53,20 @@ a {
 .media.media--uploading:after {
   content: none;
 }
+
+.media.media--error {
+  opacity: .5;
+  border: 2px dotted #0099ff;
+}
+
+.media.media--error:after {
+  content: "";
+  display: block;
+  width: 2em;
+  height: 2em;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #cc3300 none;
+  border-radius: 1em;
+}
