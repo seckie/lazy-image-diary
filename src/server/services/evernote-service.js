@@ -216,7 +216,7 @@ class EvernoteService {
             const newNote = new Evernote.Types.Note();
             newNote.title = theNote.title;
             newNote.content = nBody;
-            newNote.resources = theNote.resources.concat(resource);
+            newNote.resources = theNote.resources && theNote.resources.length ? theNote.resources.concat(resource) : [resource];
             newNote.guid = theNote.guid;
 
             // Update the note
