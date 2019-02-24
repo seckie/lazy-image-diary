@@ -55,7 +55,7 @@ router.get('/create_todays_note', isAuthenticated, (req, res, next) => {
 router.post('/create_image_note', isAuthenticated, upload.single('fileData'), (req, res, next) => {
   if (!req.body || !req.file) {
     console.log('No body or file');
-    return res.send({error: true, message: 'No request body or file'});
+    return res.status(400).send('No request body or file');
   }
   const data = Object.assign({}, req.file, {
     lastModified: parseInt(req.body.fileLastModified, 10)
@@ -67,19 +67,13 @@ router.post('/create_image_note', isAuthenticated, upload.single('fileData'), (r
         note: note
       });
     }, (err) => {
-      res.send({
-        success: false,
-        message: err.message
-      });
+      res.status(400).send(err.message);
     });
   }
 }, (err, req, res, next) => {
   // Upload error
   if (err) {
-    res.send({
-      success: false,
-      message: err.message
-    });
+    res.status(400).send(err.message);
   }
 });
 
