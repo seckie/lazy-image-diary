@@ -1,63 +1,77 @@
+(function () {
+
+var index, dataset, reader;
 var $input = document.getElementById('imagefiles');
 if (window.File && window.FileReader && window.FileList && window.Blob) {
   $input.addEventListener('change', handleFileSelect, false);
 }
+
 function handleFileSelect (e) {
   var target = e.currentTarget;
   if (!target) { return; }
   var files = target.files;
   if (!files) { return; }
-  var dataset = [];
+  index = 0;
+  dataset = [];
+  reader = new FileReader();
   for (var i = 0, l = files.length; i<l; i++) {
     var f = files[i];
     if (!f.type.match('image.*')) { continue; }
-    var reader = new FileReader();
-    reader.onload = (handleOnloadAsDataURL)(f);
-    reader.readAsDataURL(f);
-    var formData = new FormData();
-    formData.append('fileData', f);
-    formData.append('fileLastModified', f.lastModified);
-    dataset .push(formData);
+    dataset.push({file: f});
   }
-  loopRequest(dataset, 0)
+   readFile(dataset[index], reader);
 }
 
-function loopRequest(dataset, index) {
-  request(dataset[index], function (res) {
-    document.querySelectorAll('p.media')[index].classList.remove('media--uploading');
-    index ++;
-    if (index < dataset.length) {
-      loopRequest(dataset, index);
-    }
-  }, function (err) {
-    console.error(err.message);
-    document.querySelectorAll('p.media')[index].classList.remove('media--uploading');
-    document.querySelectorAll('p.media')[index].classList.add('media--error');
-    index ++;
-    if (index < dataset.length) {
-      loopRequest(dataset, index);
-    }
-  });
-}
-
-function handleOnloadAsDataURL (theFile) {
-  return function (e) {
-    // Render thumbnail.
-    var p = document.createElement('p');
-    p.className = "media media--uploading";
-    p.innerHTML = ['<img class="thumb" src="', e.target.result,
-      '" title="', escape(theFile.name), '"/>'].join('');
-    document.getElementById('list').insertBefore(p, null);
-  };
-}
-
-function request (data, resolve, reject) {
-  $.ajax('/create_image_note', {
+function upload(index) {
+  var el = dataset[index].el;
+  var data = dataset[index].formData;
+  return $.ajax('/create_image_note', {
     method: 'POST',
     data: data,
     contentType: false,
     processData: false,
-    success: resolve,
-    error: reject
-  })
+    success: function (res) {
+      el.classList.remove('media--uploading');
+      // loop
+      index ++;
+      if (dataset[index]) {
+        upload(index);
+      }
+    },
+    error: function (err) {
+      console.error(err.message);
+      el.classList.remove('media--uploading');
+      el.classList.add('media--error');
+    }
+  });
 }
+
+function readFile (data) {
+  reader.onload = function (e) {
+    var formData = new FormData();
+    formData.append('fileData', data.file);
+    formData.append('fileLastModified', data.file.lastModified);
+    // Render thumbnail.
+    var p = document.createElement('p');
+    p.className = "media media--uploading";
+    p.innerHTML = ['<img class="thumb" src="', e.target.result,
+      '" title="', escape(data.file.name), '"/>'].join('');
+    document.getElementById('list').insertBefore(p, null);
+    if (dataset[index]) {
+      dataset[index].el = p;
+      dataset[index].formData = formData;
+    }
+    // loop
+    index ++;
+    if (dataset[index]) {
+      readFile(dataset[index]);
+    } else {
+      // start uploading
+      index = 0;
+      upload(index);
+    }
+  };
+  reader.readAsDataURL(data.file);
+}
+
+})();
