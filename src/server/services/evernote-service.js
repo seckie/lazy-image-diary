@@ -211,6 +211,10 @@ class EvernoteService {
             nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
             nBody += dom.window.document.body.innerHTML;
             console.log(nBody);
+            nBody = nBody.replace(/(<[hb]r[^>]*>)+<\/en-media>/gi, '</en-media>')
+            .replace(/(&nbsp;)+<\/en-media>/gi, '</en-media>')
+            .replace(/<br>(<\/\s?br>)?/gi, '<br/>')
+            .replace(/<hr>(<\/\s?hr>)?/gi, '<hr/>');
 
             // Create note object
             const newNote = new Evernote.Types.Note();

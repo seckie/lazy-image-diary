@@ -67,7 +67,7 @@ router.post('/create_image_note', isAuthenticated, upload.single('fileData'), (r
         note: note
       });
     }, (err) => {
-      res.status(400).send(err.message);
+      res.status(400).send(err.message || err.parameter);
     });
   }
 }, (err, req, res, next) => {
