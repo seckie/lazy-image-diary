@@ -7,20 +7,19 @@ const { JSDOM } = jsdom;
 const secret = require('../config/secret');
 const dateService = require('./date-service');
 const {SANDBOX, NOTEBOOK_NAME} = require('../config/app-config');
-const authOptBase = {
-  sandbox: SANDBOX,
-  china: false
-};
 
 class EvernoteService {
   constructor() {
+    this.AUTH_OPT_BASE = {
+      sandbox: SANDBOX,
+      china: false // change to true if you wish to connect to YXBJ - most of you won't
+    };
     // initialize OAuth
-    this.client = new Evernote.Client({
+    const initializeOpt = Object.assign({}, this.AUTH_OPT_BASE, {
       consumerKey: secret.evernote.consumerKey,
       consumerSecret: secret.evernote.consumerSecret,
-      sandbox: SANDBOX, 
-      china: false, // change to true if you wish to connect to YXBJ - most of you won't
     });
+    this.client = new Evernote.Client(initializeOpt);
   }
   getRequestToken(callbackUrl) {
     return new Promise((resolve, reject) => {
@@ -28,7 +27,7 @@ class EvernoteService {
         if (error) {
           reject(error);
         } else {
-          const authorizeUrl = this.client.getAuthorizeUrl(oauthToken)
+          const authorizeUrl = this.client.getAuthorizeUrl(oauthToken);
           const result = {
             oauthToken: oauthToken,
             oauthTokenSecret: oauthTokenSecret,
@@ -50,24 +49,32 @@ class EvernoteService {
           } else if (!oauthToken) {
             reject({message: 'No token'});
           } else {
+            this.authenticatedClient = this.getAuthenticatedClient(oauthToken);
             resolve(oauthToken);
           }
         });
     });
   }
+
+  getAuthenticatedClient (oauthToken) {
+    if (!this.authenticatedClient) {
+      if (!oauthToken) {
+        throw new Error('No auth information to use getUser()');
+      }
+      const authOpt = Object.assign({}, this.AUTH_OPT_BASE, {token: oauthToken});
+      this.authenticatedClient = new Evernote.Client(authOpt);
+    }
+    return this.authenticatedClient;
+  }
+
   getUser (oauthToken) {
-    const authOpt = Object.assign({}, authOptBase, {token: oauthToken});
-    const authenticatedClient = new Evernote.Client(authOpt);
-    const userStore = authenticatedClient.getUserStore();
-    // return promise with user object
+    const userStore = this.authenticatedClient.getUserStore();
     return userStore.getUser();
   }
 
   getNoteStore (oauthToken) {
     if (!this.noteStore) {
-      const authOpt = Object.assign({}, authOptBase, {token: oauthToken});
-      const authenticatedClient = new Evernote.Client(authOpt);
-      this.noteStore = authenticatedClient.getNoteStore();
+      this.noteStore = this.authenticatedClient.getNoteStore();
     }
     return this.noteStore;
   }

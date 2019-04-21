@@ -1,10 +1,19 @@
 const request = require('supertest');
 const evernoteService = require('../../src/server/services/evernote-service');
+const Evernote = require('evernote');
 
 describe('evernote-service.js', () => {
+  const OAUTH_TOKEN = 'oauthToken';
+  const OAUTH_TOKEN_SECRET = 'oauthTokenSecret';
+  const AUTHORIZED_URL = 'authorizedUrl';
   let originalClient;
+
   beforeEach(() => {
     originalClient = evernoteService.client;
+    // Mock
+    evernoteService.client.getAuthorizeUrl = (oauthToken) => {
+      return AUTHORIZED_URL;
+    };
   });
   afterEach(() => {
     // Resume client
@@ -12,15 +21,26 @@ describe('evernote-service.js', () => {
   });
   describe('getRequestToken()', () => {
     it('resolve', (cb) => {
+      // Mock
+      evernoteService.client.getRequestToken = jest.fn((cbUrl, callback) => {
+        callback(null, OAUTH_TOKEN, OAUTH_TOKEN_SECRET);
+      });
+
       const cbUrl = 'http://localhost:9999/foo';
       evernoteService.getRequestToken(cbUrl).then((result) => {
-        expect(typeof result.oauthToken).toBe('string');
-        expect(typeof result.oauthTokenSecret).toBe('string');
-        expect(typeof result.authorizeUrl).toBe('string');
+        expect(result.oauthToken).toBe(OAUTH_TOKEN);
+        expect(result.oauthTokenSecret).toBe(OAUTH_TOKEN_SECRET);
+        expect(result.authorizeUrl).toBe(AUTHORIZED_URL);
         cb();
       })
     });
     it('reject', (cb) => {
+      // mock
+      evernoteService.client.getRequestToken = (cbUrl, callback) => {
+        const err = { statusCode: 400 };
+        callback(err);
+      };
+
       const cbUrl = undefined;
       const cb1 = jest.fn(() => {
         expect(cb1).not.toHaveBeenCalled();
@@ -91,11 +111,62 @@ describe('evernote-service.js', () => {
       });
     })
   });
+
+  describe('getAuthenticatedClient()', () => {
+    beforeEach(() => {
+      // mock
+      Evernote.Client = jest.fn().mockImplementation(() => {
+        return {
+          method1: function () { return 'foo'; }
+        }
+      });
+      // reset client
+      evernoteService.authenticatedClient = undefined;
+    });
+
+    it('return authenticatedClient with TOKEN argument', () => {
+      const TOKEN = 'token';
+      const authenticatedClient = evernoteService.getAuthenticatedClient(TOKEN);
+      expect(authenticatedClient.method1()).toBe('foo');
+    });
+    it('throw exception without TOKEN argument', () => {
+      expect(() => evernoteService.getAuthenticatedClient()).toThrow();
+    });
+    it('save authenticatedClient as its property', () => {
+      const TOKEN = 'token';
+      const authenticatedClient = evernoteService.getAuthenticatedClient(TOKEN);
+      expect(evernoteService.getAuthenticatedClient()).toBe(authenticatedClient);
+    });
+  });
+
   describe('getUser()', () => {
     it('getRequestToken', () => {
       expect(1).toBe(1);
     });
   });
+
+  xdescribe('getNoteStore()', () => {
+    let originalNoteStore;
+    beforeEach(() => {
+      originalNoteStore = evernoteService.noteStore;
+    });
+    afterEach(() => {
+      evernoteService.noteStore = originalNoteStore;
+    });
+    it('return existing noteBook', () => {
+      const NOTE = { data: 'foo' };
+      evernoteService.noteStore = NOTE;
+      expect(evernoteService.getNoteStore(OAUTH_TOKEN)).toEqual(NOTE);
+    });
+    it('return NoteStore from authenticated client', () => {
+      const noteStore = evernoteService.getNoteStore(OAUTH_TOKEN);
+      const authOpt = Object.assign({}, evernoteService.AUTH_OPT_BASE, { token: OAUTH_TOKEN });
+      const client = new Evernote.Client(authOpt);
+      const expected = client.getNoteStore();
+      expect(noteStore).toEqual(expected);
+    });
+  });
+
   describe('getDiaryNotebook()', () => {
     it('getRequestToken', () => {
       expect(1).toBe(1);

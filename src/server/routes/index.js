@@ -32,7 +32,7 @@ router.get('/oauth_signin', (req, res, next) => {
 });
 
 router.get('/oauth_callback', (req, res, next) => {
-  evernoteService.getAccessToken(req).then((oauthToken, client) => {
+  evernoteService.getAccessToken(req).then((oauthToken) => {
     req.session.oauthToken = oauthToken;
     evernoteService.getUser(oauthToken).then((user) => {
       req.session.user = user;
