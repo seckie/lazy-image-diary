@@ -67,23 +67,21 @@ class EvernoteService {
     return this.authenticatedClient;
   }
 
-  getUser (oauthToken) {
+  getUser () {
     const userStore = this.authenticatedClient.getUserStore();
     return userStore.getUser();
   }
 
-  getNoteStore (oauthToken) {
+  getNoteStore () {
     if (!this.noteStore) {
       this.noteStore = this.authenticatedClient.getNoteStore();
     }
     return this.noteStore;
   }
 
-  getDiaryNotebook (oauthToken, noteStore) {
+  getDiaryNotebook () {
     return new Promise((resolve, reject) => {
-      if (!noteStore) {
-        noteStore = this.getNoteStore(oauthToken);
-      }
+      const noteStore = this.getNoteStore();
       noteStore.listNotebooks().then((notebooks) => {
         const diary = notebooks.find((notebook) => {
           return notebook.name === NOTEBOOK_NAME;
@@ -135,133 +133,134 @@ class EvernoteService {
 
   createTodaysNoteWithImage (oauthToken, data) {
     return new Promise((resolve, reject) => {
-      const noteStore = this.getNoteStore(oauthToken);
-      this.getDiaryNotebook(oauthToken).then((notebook) => {
-        this.makeImageNote(oauthToken, notebook, data).then(resolve, reject);
+      const noteStore = this.getNoteStore();
+      this.getDiaryNotebook().then((notebook) => {
+        this._makeImageNote(oauthToken, notebook, data).then(resolve, reject);
       });
     });
   }
 
-  makeImageNote(oauthToken, parentNotebook, file) {
-    // - Search a note of today
-    // - If the note was found
-    //     - Get the body
+  _makeImageNote(oauthToken, parentNotebook, file) {
     //     - Make new media
     //     - Make new <en-media/> tag of the media
     //     - Make date string of the media
     //     - Merge new tag and date into the body
     // - Else
     //     - Create new note
-
     return new Promise((resolve, reject) => {
-      const newMoment = moment(file.lastModified);
-      const title = newMoment.format('YYYY-MM-DD');
-
-      const noteStore = this.getNoteStore(oauthToken);
+      const date = moment(file.lastModified);
+      const title = date.format('YYYY-MM-DD');
+      const noteStore = this.getNoteStore();
+      // - Search a note of today
       evernoteService.searchNotesWithTitle(noteStore, title).then((res) => {
-        // Create resource
-        const dataBuf = file.buffer;
-        const hexHash = crypto.createHash('md5').update(dataBuf).digest('hex');
-
-        const data = new Evernote.Types.Data();
-        data.body = dataBuf;
-        data.size = file.size;
-        const resource = new Evernote.Types.Resource();
-        resource.mime = file.mimetype;
-        resource.data = data;
-        const attr = new Evernote.Types.ResourceAttributes();
-        attr.fileName = file.originalname;
-        resource.attributes = attr;
-
+        const { resource, hexHash } = this._makeResource(file);
         // Create body
-        const nMedia = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
-
         const notes = res.notes;
+        const timeString = date.format('HH:mm:ss');
+        // - If the note was found
         if (notes && notes[0]) {
-          // Already the note exists
+          // Already the note exists so update it
           const theNote = notes[0];
-          const noteStore = this.getNoteStore(oauthToken);
+          const noteStore = this.getNoteStore();
           noteStore.getNoteContent(theNote.guid).then((content) => {
-            const dom = new JSDOM(content);
-            const $times = dom.window.document.querySelectorAll('p[title="time"]');
-            let hmsTimes = [];
-            for (let i = 0, l = $times.length; i<l; i++) {
-              hmsTimes.push($times[i].textContent);
-            }
-            // 新しいエントリーを挿入すべきノート中の位置
-            const index = dateService.getIndexOfInsertPosition(hmsTimes, file.lastModified);
-            // 新しいノードを作る
-            const parentNode = dom.window.document.querySelector('en-note');
-            const newTime = newMoment.format('HH:mm:ss');
-            const newNode = dom.window.document.createElement('div');
-            const newTimeNode = dom.window.document.createElement('p');
-            const newMediaNode = dom.window.document.createElement('p');
-            newNode.setAttribute('title', 'section');
-            newTimeNode.setAttribute('title', 'time')
-            newMediaNode.setAttribute('title', 'media')
-            newTimeNode.innerHTML = newTime;
-            newMediaNode.innerHTML = nMedia;
-            newNode.appendChild(newTimeNode);
-            newNode.appendChild(newMediaNode);
-            // ノードの挿入
-            if ($times[index]) {
-              // 途中に挿入
-              const targetNode = $times[index].parentNode;
-              parentNode.insertBefore(newNode, targetNode);
-            } else {
-              // 末尾へ挿入
-              parentNode.appendChild(newNode);
-            }
-
-            // update content
-            let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
-            nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
-            nBody += dom.window.document.body.innerHTML;
-            console.log(nBody);
-            nBody = nBody.replace(/(<[hb]r[^>]*>)+<\/en-media>/gi, '</en-media>')
-            .replace(/(&nbsp;)+<\/en-media>/gi, '</en-media>')
-            .replace(/<br>(<\/\s?br>)?/gi, '<br/>')
-            .replace(/<hr>(<\/\s?hr>)?/gi, '<hr/>');
-
-            // Create note object
-            const newNote = new Evernote.Types.Note();
-            newNote.title = theNote.title;
-            newNote.content = nBody;
-            newNote.resources = theNote.resources && theNote.resources.length ? theNote.resources.concat(resource) : [resource];
-            newNote.guid = theNote.guid;
-
-            // Update the note
+            const dom = this._makeNewDom(content, timeString, file.lastModified);
+            const newNote = this._makeUpdatedNote(theNote, resource, dom);
             noteStore.updateNote(newNote).then(resolve, reject);
           }, reject)
         } else {
           // Make new note
-
-          // Make new body
-          let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
-          nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
-          nBody += '<en-note>';
-          nBody += '<div title="section">';
-          nBody += `<p title="time">${newMoment.format('HH:mm:ss')}</p>`;
-          nBody += `<p title="media">${nMedia}</p>`;
-          nBody += '</div>';
-          nBody += "</en-note>";
-
-          // Create note object
           const ourNote = new Evernote.Types.Note();
-          ourNote.title = `${newMoment.format('YYYY-MM-DD')} [${newMoment.format('ddd').toUpperCase()}]`;
+          const nBody = this._makeNewEntryBodyString(resouece, hexHash, timeString);
+          ourNote.title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`;
           ourNote.content = nBody;
           ourNote.resources = [resource];
-
-          // parentNotebook is optional; if omitted, default notebook is used
           if (parentNotebook && parentNotebook.guid) {
             ourNote.notebookGuid = parentNotebook.guid;
           }
-
-          // Attempt to create note in Evernote account (returns a Promise)
           noteStore.createNote(ourNote).then(resolve, reject);
         }
       }, reject);
     });
+  }
+
+  _makeResource(file) {
+    const hexHash = crypto.createHash('md5').update(file.buffer).digest('hex');
+
+    const data = new Evernote.Types.Data();
+    data.body = file.buffer;
+    data.size = file.size;
+    const resource = new Evernote.Types.Resource();
+    resource.mime = file.mimetype;
+    resource.data = data;
+    const attr = new Evernote.Types.ResourceAttributes();
+    attr.fileName = file.originalname;
+    resource.attributes = attr;
+
+    return { resource, hexHash };
+  }
+
+  _makeNewEntryBodyString (resource, hexHash, timeString) {
+    const nBody = `<?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+    <en-note>
+    <div title="section">
+    <p title="time">${timeString}</p>
+    <p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>
+    </div>
+    </en-note>`
+    return nBody;
+  }
+
+  _makeNewDom(content, timeString, lastModified, mediaENML) {
+    const dom = new JSDOM(content);
+    const $times = dom.window.document.querySelectorAll('p[title="time"]');
+    let hmsTimes = [];
+    for (let i = 0, l = $times.length; i < l; i++) {
+      hmsTimes.push($times[i].textContent);
+    }
+    // 新しいエントリーを挿入すべきノート中の位置
+    const index = dateService.getIndexOfInsertPosition(hmsTimes, lastModified);
+    // 新しいノードを作る
+    const parentNode = dom.window.document.querySelector('en-note');
+    const newNode = dom.window.document.createElement('div');
+    const newTimeNode = dom.window.document.createElement('p');
+    const newMediaNode = dom.window.document.createElement('p');
+    newNode.setAttribute('title', 'section');
+    newTimeNode.setAttribute('title', 'time')
+    newMediaNode.setAttribute('title', 'media')
+    newTimeNode.innerHTML = timeString;
+    newMediaNode.innerHTML = mediaENML;
+    newNode.appendChild(newTimeNode);
+    newNode.appendChild(newMediaNode);
+    // ノードの挿入
+    if ($times[index]) {
+      // 途中に挿入
+      const targetNode = $times[index].parentNode;
+      parentNode.insertBefore(newNode, targetNode);
+    } else {
+      // 末尾へ挿入
+      parentNode.appendChild(newNode);
+    }
+    return dom;
+  }
+
+  _makeUpdatedNote(originalNote, resource, dom) {
+
+    // update content
+    let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
+    nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
+    nBody += dom.window.document.body.innerHTML;
+    nBody = nBody.replace(/(<[hb]r[^>]*>)+<\/en-media>/gi, '</en-media>')
+      .replace(/(&nbsp;)+<\/en-media>/gi, '</en-media>')
+      .replace(/<br>(<\/\s?br>)?/gi, '<br/>')
+      .replace(/<hr>(<\/\s?hr>)?/gi, '<hr/>');
+
+    // Create note object
+    const newNote = new Evernote.Types.Note();
+    newNote.title = originalNote.title;
+    newNote.content = nBody;
+    newNote.resources = originalNote.resources && originalNote.resources.length ? originalNote.resources.concat(resource) : [resource];
+    newNote.guid = originalNote.guid;
   }
 }
 

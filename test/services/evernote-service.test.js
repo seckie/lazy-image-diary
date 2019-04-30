@@ -1,6 +1,7 @@
 const request = require('supertest');
 const evernoteService = require('../../src/server/services/evernote-service');
 const Evernote = require('evernote');
+const { JSDOM } = require("jsdom");
 
 describe('evernote-service.js', () => {
   const OAUTH_TOKEN = 'oauthToken';
@@ -182,9 +183,79 @@ describe('evernote-service.js', () => {
       expect(1).toBe(1);
     });
   });
-  describe('makeImageNote()', () => {
+  describe('_makeImageNote()', () => {
     it('getRequestToken', () => {
       expect(1).toBe(1);
+    });
+  });
+
+  describe('_makeNewEntryBodyString', () => {
+    const resource = { mime: 'abc' };
+    const hexHash = 'abc';
+    const timeString = '2019-04-01';
+    it('return string', () => {
+      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      expect(typeof result).toBe('string');
+    });
+    it('include "title" element', () => {
+      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      expect(new RegExp(`<p title="time">${timeString}</p>`).test(result)).toBe(true);
+    });
+    it('include "media" element', () => {
+      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      expect(new RegExp(`<p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>`).test(result)).toBe(true);
+    });
+  });
+
+  describe('_makeNewDom', () => {
+    const content = `<?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+    <en-note>
+    <div title="section">
+    <p title="time">08:00:00</p>
+    <p title="media"><en-media hash="hash1" type="mimestring" /></p>
+    </div>
+    <div title="section">
+    <p title="time">12:00:00</p>
+    <p title="media"><en-media hash="hash2" type="mimestring" /></p>
+    </div>
+    </en-note>`;
+    const timeString = '09:00:00';
+    const lastModified = '2019-04-01T10:00:00';
+    const mediaENML = `<en-media hash="hash2" type="mimestring" />`
+    it('return dom', () => {
+      const dom = evernoteService._makeNewDom(content, timeString, lastModified, mediaENML);
+      expect(typeof dom.window).toBe('object');
+    });
+    it('has updated sections', () => {
+      const dom = evernoteService._makeNewDom(content, timeString, lastModified, mediaENML);
+      const $sections = dom.window.document.querySelectorAll('[title="section"]');
+      expect($sections.length).toBe(3);
+    });
+  });
+
+  describe('_makeResource', () => {
+    const file = {
+      buffer: 'abcdefg',
+      size: 256,
+      mimetype: 'image/png',
+      originalname: 'something'
+    };
+    let result;
+    beforeEach(() => {
+      result = evernoteService._makeResource(file);
+    });
+    it('file.mimetype should be set into result.resource', () => {
+      expect(result.resource.mime).toBe(file.mimetype);
+    });
+    it('file.buffer should be set into result.resource.data.body', () => {
+      expect(result.resource.data.body).toEqual(file.buffer);
+    });
+    it('file.size should be set into result.resource.data.size', () => {
+      expect(result.resource.data.size).toBe(file.size);
+    });
+    it('result.hexHash is string', () => {
+      expect(typeof result.hexHash === 'string').toBe(true);
     });
   });
 });
