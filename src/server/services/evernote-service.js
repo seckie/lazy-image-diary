@@ -163,8 +163,8 @@ class EvernoteService {
           const theNote = notes[0];
           const noteStore = this.getNoteStore();
           noteStore.getNoteContent(theNote.guid).then((content) => {
-            const dom = this._makeNewDom(content, timeString, file.lastModified);
-            const newNote = this._makeUpdatedNote(theNote, resource, dom);
+            const dom = this._makeNewDom(content, file.lastModified);
+            const newNote = this._makeUpdatedNote(theNote, dom.window.document.body.innerHTML, resource);
             noteStore.updateNote(newNote).then(resolve, reject);
           }, reject)
         } else {
@@ -211,7 +211,8 @@ class EvernoteService {
     return nBody;
   }
 
-  _makeNewDom(content, timeString, lastModified, mediaENML) {
+  _makeNewDom(content, lastModified, mediaENML) {
+    const date = moment(lastModified);
     const dom = new JSDOM(content);
     const $times = dom.window.document.querySelectorAll('p[title="time"]');
     let hmsTimes = [];
@@ -228,7 +229,7 @@ class EvernoteService {
     newNode.setAttribute('title', 'section');
     newTimeNode.setAttribute('title', 'time')
     newMediaNode.setAttribute('title', 'media')
-    newTimeNode.innerHTML = timeString;
+    newTimeNode.innerHTML = date.format('HH:mm:ss');
     newMediaNode.innerHTML = mediaENML;
     newNode.appendChild(newTimeNode);
     newNode.appendChild(newMediaNode);
@@ -244,16 +245,12 @@ class EvernoteService {
     return dom;
   }
 
-  _makeUpdatedNote(originalNote, resource, dom) {
-
+  _makeUpdatedNote(originalNote, bodyString, resource) {
     // update content
     let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
     nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
-    nBody += dom.window.document.body.innerHTML;
-    nBody = nBody.replace(/(<[hb]r[^>]*>)+<\/en-media>/gi, '</en-media>')
-      .replace(/(&nbsp;)+<\/en-media>/gi, '</en-media>')
-      .replace(/<br>(<\/\s?br>)?/gi, '<br/>')
-      .replace(/<hr>(<\/\s?hr>)?/gi, '<hr/>');
+    nBody += bodyString;
+    nBody = this._removeUnnecessaryBreak(nBody);
 
     // Create note object
     const newNote = new Evernote.Types.Note();
@@ -261,8 +258,18 @@ class EvernoteService {
     newNote.content = nBody;
     newNote.resources = originalNote.resources && originalNote.resources.length ? originalNote.resources.concat(resource) : [resource];
     newNote.guid = originalNote.guid;
+    return newNote;
+  }
+
+  _removeUnnecessaryBreak (content) {
+    return content
+      .replace(/(<[hb]r[^>]*>)+<\/en-media>/gi, '</en-media>')
+      .replace(/(&nbsp;)+<\/en-media>/gi, '</en-media>')
+      .replace(/<br>(<\/\s?br>)?/gi, '<br/>')
+      .replace(/<hr>(<\/\s?hr>)?/gi, '<hr/>');
   }
 }
+
 
 const evernoteService = new EvernoteService();
 

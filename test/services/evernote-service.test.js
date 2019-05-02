@@ -189,51 +189,6 @@ describe('evernote-service.js', () => {
     });
   });
 
-  describe('_makeNewEntryBodyString', () => {
-    const resource = { mime: 'abc' };
-    const hexHash = 'abc';
-    const timeString = '2019-04-01';
-    it('return string', () => {
-      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
-      expect(typeof result).toBe('string');
-    });
-    it('include "title" element', () => {
-      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
-      expect(new RegExp(`<p title="time">${timeString}</p>`).test(result)).toBe(true);
-    });
-    it('include "media" element', () => {
-      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
-      expect(new RegExp(`<p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>`).test(result)).toBe(true);
-    });
-  });
-
-  describe('_makeNewDom', () => {
-    const content = `<?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-    <en-note>
-    <div title="section">
-    <p title="time">08:00:00</p>
-    <p title="media"><en-media hash="hash1" type="mimestring" /></p>
-    </div>
-    <div title="section">
-    <p title="time">12:00:00</p>
-    <p title="media"><en-media hash="hash2" type="mimestring" /></p>
-    </div>
-    </en-note>`;
-    const timeString = '09:00:00';
-    const lastModified = '2019-04-01T10:00:00';
-    const mediaENML = `<en-media hash="hash2" type="mimestring" />`
-    it('return dom', () => {
-      const dom = evernoteService._makeNewDom(content, timeString, lastModified, mediaENML);
-      expect(typeof dom.window).toBe('object');
-    });
-    it('has updated sections', () => {
-      const dom = evernoteService._makeNewDom(content, timeString, lastModified, mediaENML);
-      const $sections = dom.window.document.querySelectorAll('[title="section"]');
-      expect($sections.length).toBe(3);
-    });
-  });
-
   describe('_makeResource', () => {
     const file = {
       buffer: 'abcdefg',
@@ -256,6 +211,163 @@ describe('evernote-service.js', () => {
     });
     it('result.hexHash is string', () => {
       expect(typeof result.hexHash === 'string').toBe(true);
+    });
+  });
+
+  describe('_makeNewEntryBodyString', () => {
+    const resource = { mime: 'abc' };
+    const hexHash = 'abc';
+    const timeString = '2019-04-01';
+    it('return string', () => {
+      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      expect(typeof result).toBe('string');
+    });
+    it('include "title" element', () => {
+      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      expect(new RegExp(`<p title="time">${timeString}</p>`).test(result)).toBe(true);
+    });
+    it('include "media" element', () => {
+      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      expect(new RegExp(`<p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>`).test(result)).toBe(true);
+    });
+  });
+
+  describe('_makeNewDom', () => {
+    const lastModified6AM = '2019-04-01T06:00:00';
+    const lastModified9AM = '2019-04-01T09:00:00';
+    const lastModified3PM = '2019-04-01T15:00:00';
+    const timeString6AM = "06:00:00";
+    const timeString8AM = "08:00:00";
+    const timeString9AM = "09:00:00";
+    const timeString11AM = "11:00:00";
+    const timeString3PM = "15:00:00";
+    const content = `<?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+    <en-note>
+    <div title="section">
+    <p title="time">${timeString8AM}</p>
+    <p title="media"><en-media hash="hash1" type="mimestring" /></p>
+    </div>
+    <div title="section">
+    <p title="time">${timeString11AM}</p>
+    <p title="media"><en-media hash="hash2" type="mimestring" /></p>
+    </div>
+    </en-note>`;
+    const mediaENML = `<en-media hash="hash2" type="mimestring" />`
+    it('return dom', () => {
+      const dom = evernoteService._makeNewDom(content, lastModified9AM, mediaENML);
+      expect(typeof dom.window).toBe('object');
+    });
+    it('has updated sections', () => {
+      const dom = evernoteService._makeNewDom(content, lastModified9AM, mediaENML);
+      const $sections = dom.window.document.querySelectorAll('[title="section"]');
+      expect($sections.length).toBe(3);
+    });
+    describe('has updated "time" paragraph', () => {
+      const getTimeElements = (lastModified) => {
+        const dom = evernoteService._makeNewDom(content, lastModified, mediaENML);
+        return dom.window.document.querySelectorAll('[title="time"]');
+      };
+      it("9AM", () => {
+        const $times = getTimeElements(lastModified9AM);
+        expect($times[0].textContent).toBe(timeString8AM);
+        expect($times[1].textContent).toBe(timeString9AM);
+        expect($times[2].textContent).toBe(timeString11AM);
+      });
+      it("6AM", () => {
+        const $times = getTimeElements(lastModified6AM);
+        expect($times[0].textContent).toBe(timeString6AM);
+        expect($times[1].textContent).toBe(timeString8AM);
+        expect($times[2].textContent).toBe(timeString11AM);
+      });
+      it("3PM", () => {
+        const $times = getTimeElements(lastModified3PM);
+        expect($times[0].textContent).toBe(timeString8AM);
+        expect($times[1].textContent).toBe(timeString11AM);
+        expect($times[2].textContent).toBe(timeString3PM);
+      });
+    });
+  });
+
+  describe('_makeUpdatedNote', () => {
+    const TITLE = 'title';
+    const CONTENT = 'content';
+    const RESOURCE = {id: 1};
+    const GUID = 'guid';
+    const originalNote = new Evernote.Types.Note();
+    originalNote.title = TITLE;
+    originalNote.content = CONTENT;
+    originalNote.resources = [RESOURCE];
+    originalNote.guid = GUID;
+
+    it('return mixed Note object', () => {
+      const bodyContent = 'body';
+      const body = `<p title="body">${bodyContent}</p>`;
+      const resource = {id: 2};
+      const result = evernoteService._makeUpdatedNote(originalNote, body, resource);
+      expect(result.title).toBe(TITLE);
+      expect(new RegExp(body).test(result.content)).toBe(true);
+      expect(result.resources[0]).toEqual(RESOURCE);
+      expect(result.resources[1]).toEqual(resource);
+      expect(result.guid).toEqual(GUID);
+    });
+    it('if originalNote doesn\'t have any resource, new note would have just one resource', () => {
+      const body = 'body';
+      const resource = {id: 2};
+      const tempResource = originalNote.resources;
+      originalNote.resources = undefined;
+      const result = evernoteService._makeUpdatedNote(originalNote, body, resource);
+      expect(result.resources[0]).toEqual(resource);
+      originalNote.resource = tempResource;
+    });
+  });
+
+  describe('_removeUnnecessaryBreak', () => {
+    it('remove "<hr>" and "<br>" before "</en-media>"', () => {
+      const content = `
+      abc<hr></en-media>
+      ABC<hr/></en-media>
+      abc<hr ></en-media>
+      ABC<hr /></en-media>
+      abc<br></en-media>
+      ABC<br/></en-media>
+      abc<br ></en-media>
+      ABC<br /></en-media>
+      abc<hr><br></en-media>
+      ABC<hr/><br/></en-media>
+      abc<hr ><br ></en-media>
+      ABC<hr /><br /></en-media>
+      `;
+      const expected = `
+      abc</en-media>
+      ABC</en-media>
+      abc</en-media>
+      ABC</en-media>
+      abc</en-media>
+      ABC</en-media>
+      abc</en-media>
+      ABC</en-media>
+      abc</en-media>
+      ABC</en-media>
+      abc</en-media>
+      ABC</en-media>
+      `;
+      expect(evernoteService._removeUnnecessaryBreak(content)).toBe(expected);
+    });
+    it('remove "&nbsp;" before "</en-media>"', () => {
+      const content = `abc&nbsp;&nbsp;</en-media>`;
+      const expected = `abc</en-media>`;
+      expect(evernoteService._removeUnnecessaryBreak(content)).toBe(expected);
+    });
+    it('remove close tag "</br>"', () => {
+      const content = `abc<br></br>ABC<br></ br>`;
+      const expected = `abc<br/>ABC<br/>`;
+      expect(evernoteService._removeUnnecessaryBreak(content)).toBe(expected);
+    });
+    it('remove close tag "</hr>"', () => {
+      const content = `abc<hr></hr>ABC<hr></ hr>`;
+      const expected = `abc<hr/>ABC<hr/>`;
+      expect(evernoteService._removeUnnecessaryBreak(content)).toBe(expected);
     });
   });
 });
