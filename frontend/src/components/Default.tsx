@@ -1,8 +1,9 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import logo from '../logo.svg';
+import './Default.css';
+import {BrowserRouter as Router} from 'react-router-dom';
 
-const App: React.FC = () => {
+const Default: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
@@ -23,4 +24,4 @@ const App: React.FC = () => {
   );
 }
 
-export default App;
+export default Default;
