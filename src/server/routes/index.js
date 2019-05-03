@@ -38,7 +38,20 @@ router.get('/oauth_callback', (req, res, next) => {
       req.session.user = user;
       res.redirect('/create_todays_note');
     }, (error) => {
-      res.redirect('/');
+      let message;
+      switch (error.errorCode) {
+        case 19:
+          message = 'Operation denied because the calling application has reached its hourly API call limit for this user.';
+          break;
+        default:
+          message = 'evernoteService.getUser() failed';
+      }
+      console.log(message);
+      res.status(400).send({
+        success: false,
+        message: message
+      });
+      //res.redirect('/');
     })
   }, (error) => {
     console.log(error.message);
