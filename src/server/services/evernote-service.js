@@ -167,7 +167,8 @@ class EvernoteService {
           // Already the note exists so update it
           const noteStore = this.getNoteStore();
           noteStore.getNoteContent(theNote.guid).then((content) => {
-            const dom = this._makeNewDom(content, file.lastModified);
+            const media = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
+            const dom = this._makeNewDom(content, file.lastModified, media);
             const newNote = this._makeUpdatedNote(theNote, dom.window.document.body.innerHTML, resource);
             noteStore.updateNote(newNote).then(resolve, reject);
           }, reject)
