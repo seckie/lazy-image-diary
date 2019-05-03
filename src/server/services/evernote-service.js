@@ -170,7 +170,7 @@ class EvernoteService {
         } else {
           // Make new note
           const ourNote = new Evernote.Types.Note();
-          const nBody = this._makeNewEntryBodyString(resouece, hexHash, timeString);
+          const nBody = this._makeNewEntryBodyString(resource, hexHash, timeString);
           ourNote.title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`;
           ourNote.content = nBody;
           ourNote.resources = [resource];
