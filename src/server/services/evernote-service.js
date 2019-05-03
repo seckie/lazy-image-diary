@@ -148,19 +148,23 @@ class EvernoteService {
     // - Else
     //     - Create new note
     return new Promise((resolve, reject) => {
-      const date = moment(file.lastModified);
-      const title = date.format('YYYY-MM-DD');
       const noteStore = this.getNoteStore();
+      const date = moment(file.lastModified);
+      const searchTitle = date.format('YYYY-MM-DD');
+      const title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`
       // - Search a note of today
-      evernoteService.searchNotesWithTitle(noteStore, title).then((res) => {
+      evernoteService.searchNotesWithTitle(noteStore, searchTitle).then((res) => {
         const { resource, hexHash } = this._makeResource(file);
         // Create body
         const notes = res.notes;
         const timeString = date.format('HH:mm:ss');
         // - If the note was found
+        let theNote;
         if (notes && notes[0]) {
+          theNote = notes.find(note => note.title.indexOf(title) !== -1);
+        }
+        if (theNote) {
           // Already the note exists so update it
-          const theNote = notes[0];
           const noteStore = this.getNoteStore();
           noteStore.getNoteContent(theNote.guid).then((content) => {
             const dom = this._makeNewDom(content, file.lastModified);
@@ -171,7 +175,7 @@ class EvernoteService {
           // Make new note
           const ourNote = new Evernote.Types.Note();
           const nBody = this._makeNewEntryBodyString(resource, hexHash, timeString);
-          ourNote.title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`;
+          ourNote.title = title;
           ourNote.content = nBody;
           ourNote.resources = [resource];
           if (parentNotebook && parentNotebook.guid) {
