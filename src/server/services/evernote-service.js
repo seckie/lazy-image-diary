@@ -211,6 +211,7 @@ class EvernoteService {
     <div title="section">
     <p title="time">${timeString}</p>
     <p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>
+    <br />
     </div>
     </en-note>`
     return nBody;
@@ -231,6 +232,7 @@ class EvernoteService {
     const newNode = dom.window.document.createElement('div');
     const newTimeNode = dom.window.document.createElement('p');
     const newMediaNode = dom.window.document.createElement('p');
+    const newBrNode = dom.window.document.createElement('br');
     newNode.setAttribute('title', 'section');
     newTimeNode.setAttribute('title', 'time')
     newMediaNode.setAttribute('title', 'media')
@@ -238,6 +240,7 @@ class EvernoteService {
     newMediaNode.innerHTML = mediaENML;
     newNode.appendChild(newTimeNode);
     newNode.appendChild(newMediaNode);
+    newNode.appendChild(newBrNode);
     // ノードの挿入
     if ($times[index]) {
       // 途中に挿入
