@@ -2,7 +2,7 @@ import React from 'react';
 import logo from '../logo.svg';
 import './Default.css';
 
-const Default: React.FC = () => {
+const CreateDiary: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
@@ -23,4 +23,4 @@ const Default: React.FC = () => {
   );
 }
 
-export default Default;
+export default CreateDiary;
