@@ -15,28 +15,32 @@ const upload = multer({
   }
 });
 
-router.get('/', (req, res, next) => {
-  res.render('index', {
-    title: 'Lazy Image Diary'
-  });
-});
-router.get('/oauth_signin', (req, res, next) => {
-  evernoteService.getRequestToken(CALLBACK_URL).then(({oauthToken, oauthTokenSecret, authorizeUrl}) => {
-    req.session.oauthToken = oauthToken;
-    req.session.oauthTokenSecret = oauthTokenSecret;
-    res.redirect(authorizeUrl); // send the user to Evernote
+router.get('/oauth_signin', (req, res) => {
+  const callbackUrl = req.query.callback_url || CALLBACK_URL;
+  evernoteService.getRequestToken(callbackUrl).then(({oauthToken, oauthTokenSecret, authorizeUrl}) => {
+    // req.session.oauthToken = oauthToken;
+    // req.session.oauthTokenSecret = oauthTokenSecret;
+    res.send({
+      oauthToken: oauthToken,
+      oauthTokenSecret: oauthTokenSecret,
+      authorizeUrl: authorizeUrl
+    });
   }, (error) => {
-    console.log(error.message);
-    createError('Failed to Evernote sign-in');
+    const err = createError(400, 'Failed to Evernote sign-in');
+    res.send(error || err);
   })
 });
 
 router.get('/oauth_callback', (req, res, next) => {
-  evernoteService.getAccessToken(req).then((oauthToken) => {
-    req.session.oauthToken = oauthToken;
-    evernoteService.getUser(oauthToken).then((user) => {
-      req.session.user = user;
-      res.redirect('/create_todays_note');
+  evernoteService.getAccessToken(req).then((accessToken) => {
+    //req.session.oauthToken = oauthToken;
+    evernoteService.getUser(accessToken).then((user) => {
+      res.send({
+        accessToken: accessToken,
+        user: user
+      });
+      //req.session.user = user;
+      //res.redirect('/create_todays_note');
     }, (error) => {
       let message;
       switch (error.errorCode) {
@@ -48,7 +52,6 @@ router.get('/oauth_callback', (req, res, next) => {
       }
       console.log(message);
       res.status(400).send({
-        success: false,
         message: message
       });
       //res.redirect('/');

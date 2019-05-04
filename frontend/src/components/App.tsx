@@ -1,6 +1,7 @@
 import React from 'react';
 import {BrowserRouter as Router, Switch, Route, Redirect} from 'react-router-dom';
 import Default from './Default';
+import OAuthCallback from './OAuthCallback';
 import CreateDiary from './CreateDiary';
 import NotFound from './NotFound';
 
@@ -13,12 +14,13 @@ const App: React.FC = () => {
     <Router>
       <Switch>
         <Route path='/' component={Default} exact />
-        <Redirect from='/oauth-callback' to='/create-diary' />
+        <Route path='/oauth-callback' component={OAuthCallback} />
         <Route path='/create-diary' component={CreateDiary} user={tempUser} />
         <Route component={NotFound} />
       </Switch>
     </Router>
   );
+  // <Redirect from='/oauth-callback' to='/create-diary' />
 }
 
 export default App;

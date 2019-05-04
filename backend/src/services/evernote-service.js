@@ -40,8 +40,9 @@ class EvernoteService {
   }
   getAccessToken(req) {
     return new Promise((resolve, reject) => {
-      this.client.getAccessToken(req.session.oauthToken,
-        req.session.oauthTokenSecret,
+      console.log(req.query.oauthToken);
+      this.client.getAccessToken(req.query.oauthToken,
+        req.query.oauthTokenSecret,
         req.query.oauth_verifier,
         (error, oauthToken, oauthTokenSecret, results) => {
           if (error) {
@@ -49,6 +50,7 @@ class EvernoteService {
           } else if (!oauthToken) {
             reject({message: 'No token'});
           } else {
+            console.log(oauthToken);
             this.authenticatedClient = this.getAuthenticatedClient(oauthToken);
             resolve(oauthToken);
           }
