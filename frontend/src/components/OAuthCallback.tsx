@@ -24,9 +24,9 @@ class OAuthCallback extends React.Component<IProps> {
     axios.get(url).then((res) => {
       const data = res.data;
       console.log(data.user); // TODO: save user data to store
+      console.log(data.accessToken) // TODO: save accessToken to store
       window.sessionStorage.removeItem('oauthToken');
       window.sessionStorage.removeItem('oauthTokenSecret');
-      window.sessionStorage.setItem('accessToken', data.accessToken)
       this.props.history.replace('/create-diary');
     });
   }

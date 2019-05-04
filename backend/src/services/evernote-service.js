@@ -44,26 +44,25 @@ class EvernoteService {
       this.client.getAccessToken(req.query.oauthToken,
         req.query.oauthTokenSecret,
         req.query.oauth_verifier,
-        (error, oauthToken, oauthTokenSecret, results) => {
+        (error, accessToken, oauthTokenSecret, results) => {
           if (error) {
             reject(error);
-          } else if (!oauthToken) {
+          } else if (!accessToken) {
             reject({message: 'No token'});
           } else {
-            console.log(oauthToken);
-            this.authenticatedClient = this.getAuthenticatedClient(oauthToken);
-            resolve(oauthToken);
+            this.authenticatedClient = this.getAuthenticatedClient(accessToken);
+            resolve(accessToken);
           }
         });
     });
   }
 
-  getAuthenticatedClient (oauthToken) {
+  getAuthenticatedClient (accessToken) {
     if (!this.authenticatedClient) {
-      if (!oauthToken) {
+      if (!accessToken) {
         throw new Error('No auth information to use getUser()');
       }
-      const authOpt = Object.assign({}, this.AUTH_OPT_BASE, {token: oauthToken});
+      const authOpt = Object.assign({}, this.AUTH_OPT_BASE, {token: accessToken});
       this.authenticatedClient = new Evernote.Client(authOpt);
     }
     return this.authenticatedClient;

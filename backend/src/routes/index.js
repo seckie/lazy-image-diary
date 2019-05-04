@@ -33,14 +33,11 @@ router.get('/oauth_signin', (req, res) => {
 
 router.get('/oauth_callback', (req, res, next) => {
   evernoteService.getAccessToken(req).then((accessToken) => {
-    //req.session.oauthToken = oauthToken;
     evernoteService.getUser(accessToken).then((user) => {
       res.send({
         accessToken: accessToken,
         user: user
       });
-      //req.session.user = user;
-      //res.redirect('/create_todays_note');
     }, (error) => {
       let message;
       switch (error.errorCode) {
@@ -54,11 +51,12 @@ router.get('/oauth_callback', (req, res, next) => {
       res.status(400).send({
         message: message
       });
-      //res.redirect('/');
     })
   }, (error) => {
     console.log(error.message);
-    res.redirect('/');
+    res.status(400).send({
+      message: error.message
+    });
   });
 });
 
