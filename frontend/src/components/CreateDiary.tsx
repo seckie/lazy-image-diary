@@ -1,5 +1,4 @@
 import React from 'react';
-import './Default.css';
 
 interface IUser {
   name: string

@@ -1,5 +1,4 @@
 import React from 'react';
-import './Default.css';
 
 const Default: React.FC = () => {
   return (
