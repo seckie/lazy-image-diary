@@ -5,6 +5,7 @@ const express = require('express');
 const logger = require('morgan');
 const path = require('path');
 const session = require('express-session');
+const cors = require('cors');
 
 const basicAuth = require('./middlewares/basicAuth');
 const secret = require('./config/secret.js');
@@ -13,6 +14,13 @@ const {MAX_REQUEST_SIZE} = require('./config/app-config');
 const indexRouter = require('./routes/index');
 
 const app = express();
+
+// cors
+if (app.get('env') !== 'production') {
+  app.use(cors({
+    origin: 'http://localhost:3000'
+  }));
+}
 
 // basic auth
 if (app.get('env') === 'production') {
