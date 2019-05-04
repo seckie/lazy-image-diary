@@ -1,15 +1,34 @@
 import {IActions} from '../actions/';
 import {SIGN_IN, OAUTH_CALLBACK} from '../constants/';
 
-export interface IState {
-  // TODO: modelへ持っていく
+
+export interface ISignInResponse {
+  authorizeUrl: string;
+  oauthToken: string;
+  oauthTokenSecret: string;
+}
+
+export interface IOAuthCallbackResponse {
   accessToken: string,
   user: object
 }
 
-export default function Reducer (state: IState, action: IActions) {
+export interface IState {
+  // TODO: modelへ持っていく
+  accessToken?: string,
+  user?: object
+
+  authorizeUrl?: string;
+  oauthToken?: string;
+  oauthTokenSecret?: string;
+}
+
+export default function reducers (state: IState, action: IActions) {
   switch (action.type) {
     case SIGN_IN:    
+      window.sessionStorage.setItem('oauthToken', state.oauthToken);
+      window.sessionStorage.setItem('oauthTokenSecret', state.oauthTokenSecret);
+      window.location.href = state.authorizeUrl;
       return state;
     case OAUTH_CALLBACK:    
       return {
