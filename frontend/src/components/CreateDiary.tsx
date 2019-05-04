@@ -1,24 +1,26 @@
 import React from 'react';
-import logo from '../logo.svg';
 import './Default.css';
 
+interface IUser {
+  name: string
+}
+
 const CreateDiary: React.FC = () => {
+  const tempUser: IUser = {
+    name: 'User A'
+  };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+      <h1>Upload images</h1>
+      <p>Evernote User Name: {tempUser.name}</p>
+      <p>
+        <input type="file" name="imagefiles[]" id="imagefiles" multiple accept=".jpg,.jpeg,.png,.gif" />
+      </p>
+      <div id="list">
         <p>
-          Edit <code>src/App.tsx</code> and save to reload.
+          <a href="/"> &lt;&lt; Back to index</a>
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      </div>
     </div>
   );
 }

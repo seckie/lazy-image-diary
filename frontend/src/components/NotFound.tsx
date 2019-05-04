@@ -1,20 +1,12 @@
 import React from 'react';
-import './Default.css';
 
 const NotFound: React.FC = () => {
   return (
     <div className="App">
-      <header className="App-header">
-        <p>404</p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>404 Not Found</h1>
+      <p>
+        <a href="/"> &lt;&lt; Back to index</a>
+      </p>
     </div>
   );
 }

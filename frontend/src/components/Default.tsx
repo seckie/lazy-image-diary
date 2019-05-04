@@ -1,24 +1,14 @@
 import React from 'react';
-import logo from '../logo.svg';
 import './Default.css';
 
 const Default: React.FC = () => {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Lazy Image Diary</h1>
+      <p><a className="btn.btn-evernote-signin" href="/oauth_signin">Evernote Sign-in</a></p>
+      <p>Lazy Image Diary is easy way to make diary on Evernote with your photos. <br />
+        | All you need is sign-in with your Evernote account and upload your photos from the upload form. <br />
+        | Then you would get auto generated posts with your photos on your Evernote "Diary" notebook.</p>
     </div>
   );
 }
