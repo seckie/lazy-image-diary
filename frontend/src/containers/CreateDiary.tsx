@@ -1,7 +1,20 @@
 import React from 'react';
+import {connect} from 'react-redux';
+import {Dispatch} from 'redux';
+
+export function mapStateToProps (state: any) {
+  return state;
+}
+
+export function mapDispatchToProps (dispatch: Dispatch) {
+  return {
+  }
+}
 
 interface IUser {
-  name: string
+  name: string,
+  accessToken?: string,
+  user?: object
 }
 
 const CreateDiary: React.FC = () => {
@@ -24,4 +37,4 @@ const CreateDiary: React.FC = () => {
   );
 }
 
-export default CreateDiary;
+export default connect(mapStateToProps, mapDispatchToProps)(CreateDiary);
