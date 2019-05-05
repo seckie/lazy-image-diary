@@ -1,6 +1,4 @@
-import {IActions} from '../actions/';
-import {SIGN_IN, OAUTH_CALLBACK} from '../constants/';
-
+import {SIGN_IN_SUCCESS, OAUTH_CALLBACK_SUCCESS} from '../constants/';
 
 export interface ISignInResponse {
   authorizeUrl: string;
@@ -13,24 +11,27 @@ export interface IOAuthCallbackResponse {
   user: object
 }
 
-export interface IState {
-  // TODO: modelへ持っていく
-  accessToken?: string,
-  user?: object
+// TODO: modelへ持っていく
+export type IState = ISignInResponse & IOAuthCallbackResponse;
 
-  authorizeUrl?: string;
-  oauthToken?: string;
-  oauthTokenSecret?: string;
-}
+const initialState: IState = {
+  accessToken: '',
+  user: {},
+  authorizeUrl: '',
+  oauthToken: '',
+  oauthTokenSecret: ''
+};
 
-export default function reducers (state: IState, action: IActions) {
+export default function reducers (state = initialState, action: any) {
   switch (action.type) {
-    case SIGN_IN:    
-      window.sessionStorage.setItem('oauthToken', state.oauthToken);
-      window.sessionStorage.setItem('oauthTokenSecret', state.oauthTokenSecret);
-      window.location.href = state.authorizeUrl;
+    case SIGN_IN_SUCCESS:
+      window.sessionStorage.setItem('oauthToken', action.payload!.oauthToken);
+      window.sessionStorage.setItem('oauthTokenSecret', action.payload!.oauthTokenSecret);
+      window.location.href = action.payload!.authorizeUrl;
       return state;
-    case OAUTH_CALLBACK:    
+    case OAUTH_CALLBACK_SUCCESS:    
+      window.sessionStorage.removeItem('oauthToken');
+      window.sessionStorage.removeItem('oauthTokenSecret');
       return {
         ...state,
         accessToken: action.payload.accessToken,

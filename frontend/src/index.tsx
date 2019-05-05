@@ -20,8 +20,8 @@ const store = createStore<any, any, any, any>(
 sagaMiddleware.run(sagas);
 
 ReactDOM.render(
-    <Provider store={store}><Root /></Provider>,
-    document.getElementById('root')
+  <Provider store={store}><Root /></Provider>,
+  document.getElementById('root')
 );
 
 // If you want your app to work offline and load faster, you can change

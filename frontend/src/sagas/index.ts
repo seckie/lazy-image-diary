@@ -1,7 +1,9 @@
 import {call, put, takeEvery} from 'redux-saga/effects';
 import {
   SIGN_IN,
+  SIGN_IN_SUCCESS,
   OAUTH_CALLBACK,
+  OAUTH_CALLBACK_SUCCESS,
   API_OAUTH_URL,
   API_OAUTH_CALLBACK_URL,
   LOCAL_OAUTH_CALLBACK_URL
@@ -27,17 +29,15 @@ function apiOAuthCallback (): any {
 
 function* signIn () {
   const res: any = yield call(apiSignIn);
-  yield put({type: SIGN_IN, ...res.data});
+  yield put({ type: SIGN_IN_SUCCESS, payload: res.data });
 }
 
 function* oauthCallback () {
-  const res = yield call(apiOAuthCallback);
-  window.sessionStorage.removeItem('oauthToken');
-  window.sessionStorage.removeItem('oauthTokenSecret');
-  yield put({type: OAUTH_CALLBACK, ...res.data});
+  const res: any = yield call(apiOAuthCallback);
+  yield put({ type: OAUTH_CALLBACK_SUCCESS, payload: res.data });
 }
 
-export default function* sagas () {
+export default function* rootSaga () {
   yield takeEvery(SIGN_IN, signIn);
   yield takeEvery(OAUTH_CALLBACK, oauthCallback);
 }
