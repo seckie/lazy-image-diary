@@ -60,12 +60,6 @@ router.get('/oauth_callback', (req, res, next) => {
   });
 });
 
-router.get('/create_todays_note', isAuthenticated, (req, res, next) => {
-  res.render('create_todays_note', {
-    user: req.session.user
-  });
-});
-
 router.post('/create_image_note', isAuthenticated, upload.single('fileData'), (req, res, next) => {
   if (!req.body || !req.file) {
     console.log('No body or file');
