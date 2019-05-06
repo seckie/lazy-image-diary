@@ -6,3 +6,6 @@ export const SIGN_IN = 'actions/SIGN_IN';
 export const SIGN_IN_SUCCESS = 'actions/SIGN_IN_SUCCESS';
 export const OAUTH_CALLBACK = 'actions/OAUTH_CALLBACK';
 export const OAUTH_CALLBACK_SUCCESS = 'actions/OAUTH_CALLBACK_SUCCESS';
+export const FILE_FIELD_ON_CHANGE = 'actions/FILE_FIELD_ON_CHANGE';
+export const FILE_FIELD_NO_FILE = 'actions/FILE_FIELD_NO_FILE';
+export const FILE_READ = 'actions/FILE_READ';
