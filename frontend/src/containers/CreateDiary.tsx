@@ -1,9 +1,10 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Dispatch} from 'redux';
+import classNames from 'classnames';
 
 import actions from '../actions/';
-import { IFileData } from '../reducers/';
+import { IFileData, UploadStatus } from '../reducers/';
 
 export function mapStateToProps (state: any) {
   return state;
@@ -39,8 +40,12 @@ const CreateDiary: React.FC<IProps> = (props) => {
       </p>
       <div id="list">
         {props.fileDataset.map((data: IFileData, i: number) => {
+          const mediaCName = classNames({
+            'media': true,
+            'media--uploading': data.status === UploadStatus.uploading
+          });
           return (
-            <p className="media media--uploading" key={`media${i}`}>
+            <p className={mediaCName} key={`media${i}`}>
               <img className="thumb" src={data.path} title={global.escape(data.file.name)} alt={global.escape(data.file.name)} />
             </p>
           );    

@@ -10,9 +10,11 @@ import {
   API_OAUTH_CALLBACK_URL,
   LOCAL_OAUTH_CALLBACK_URL,
   FILE_FIELD_ON_CHANGE,
-  FILE_READ
+  FILE_READ,
+  UPLOAD_COMPLETE
 } from '../constants';
 import { IFileFieldOnChangeAction } from '../actions/';
+import { UploadStatus } from '../reducers/'
 import { readFile } from '../services/file';
 
 function apiSignIn (): any {
@@ -44,12 +46,19 @@ function* oauthCallback () {
 function* fileFieldOnChange (action: IFileFieldOnChangeAction) {
   const files = action.payload && action.payload.files;
   if (!files) { return; }
+  let fileDataset = [];
   for (let i = 0, l = files.length; i<l; i++) {
     const f: File = files[i];
     if (!f.type.match('image.*')) { continue; }
     const fileData = yield readFile(f);
     yield put({ type: FILE_READ, payload: fileData });
+    fileDataset.push(fileData);
   }
+  const fileDatasetUploaded = fileDataset.map((fileData) => {
+    fileData.status = UploadStatus.complete;
+    return fileData;
+  });
+  yield put({ type: UPLOAD_COMPLETE, payload: fileDatasetUploaded });
 }
 
 export default function* rootSaga () {

@@ -1,7 +1,8 @@
 import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
-  FILE_READ
+  FILE_READ,
+  UPLOAD_COMPLETE
 } from '../constants/';
 
 export interface ISignInResponse {
@@ -18,9 +19,15 @@ export interface IOAuthCallbackResponse {
 export interface IFileDataset {
   fileDataset: IFileData[]
 }
+export enum UploadStatus {
+  uploading = 'uploading',
+  complete = 'complete',
+  failure = 'failure',
+}
 export interface IFileData {
   file: File,
-  path: string
+  path: string,
+  status: UploadStatus
 }
 
 // TODO: modelへ持っていく
@@ -54,6 +61,11 @@ export default function reducers (state = initialState, action: any) {
       return {
         ...state,
         fileDataset: state.fileDataset.concat(action.payload)
+      };
+    case UPLOAD_COMPLETE:
+      return {
+        ...state,
+        fileDataset: action.payload
       };
     default:
       return state;
