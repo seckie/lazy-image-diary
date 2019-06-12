@@ -13,7 +13,7 @@ const upload = multer({
   limits: {
     fileSize: MAX_FILE_SIZE
   }
-});
+}).array('fileData', 2);
 
 router.get('/oauth_signin', (req, res) => {
   const callbackUrl = req.query.callback_url || CALLBACK_URL;
@@ -60,12 +60,15 @@ router.get('/oauth_callback', (req, res, next) => {
   });
 });
 
-router.post('/create_image_note', isAuthenticated, upload.single('fileData'), (req, res, next) => {
-  if (!req.body || !req.file) {
+router.post('/create_image_note', isAuthenticated, upload, (req, res, next) => {
+  if (!req.body || !req.files) {
     console.log('No body or file');
     return res.status(400).send('No request body or file');
   }
-  const data = Object.assign({}, req.file, {
+  // TODO
+  // req.body.fileLastModified は渡されてこないので
+  // req.file から拾う
+  const data = Object.assign({}, req.files, {
     lastModified: parseInt(req.body.fileLastModified, 10)
   });
   if (req.file) {

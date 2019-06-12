@@ -15,7 +15,7 @@ import {
 } from '../constants';
 import { IFileFieldOnChangeAction } from '../actions/';
 import { UploadStatus } from '../reducers/'
-import { readFile } from '../services/file';
+import { readFile, uploadFile } from '../services/file';
 
 function apiSignIn (): any {
   const url = `${API_OAUTH_URL}/?callback_url=${encodeURIComponent(LOCAL_OAUTH_CALLBACK_URL)}`;
@@ -44,7 +44,7 @@ function* oauthCallback () {
 }
 
 function* fileFieldOnChange (action: IFileFieldOnChangeAction) {
-  const files = action.payload && action.payload.files;
+  const files: File[] = action.payload && action.payload.files;
   if (!files) { return; }
   let fileDataset = [];
   for (let i = 0, l = files.length; i<l; i++) {
@@ -58,6 +58,7 @@ function* fileFieldOnChange (action: IFileFieldOnChangeAction) {
     fileData.status = UploadStatus.complete;
     return fileData;
   });
+  yield uploadFile(files);
   yield put({ type: UPLOAD_COMPLETE, payload: fileDatasetUploaded });
 }
 
