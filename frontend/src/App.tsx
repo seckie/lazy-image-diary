@@ -1,9 +1,9 @@
 import React from 'react';
 import {BrowserRouter as Router, Switch, Route, Redirect} from 'react-router-dom';
-import Default from '../containers/Default';
-import OAuthCallback from '../containers/OAuthCallback';
-import CreateDiary from '../containers/CreateDiary';
-import NotFound from '../containers/NotFound';
+import Default from './containers/Default';
+import OAuthCallback from './containers/OAuthCallback';
+import CreateDiary from './containers/CreateDiary';
+import NotFound from './containers/NotFound';
 
 const tempUser = {
   name: 'ABC'
