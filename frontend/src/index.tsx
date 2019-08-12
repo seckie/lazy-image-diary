@@ -5,6 +5,7 @@ import App from './App';
 import {Provider} from 'react-redux';
 import {createStore, applyMiddleware} from 'redux';
 import createSageMiddleware from 'redux-saga';
+import { composeWithDevTools } from 'redux-devtools-extension';
 
 import reducers from './reducers/';
 import sagas from './sagas/';
@@ -14,7 +15,9 @@ import * as serviceWorker from './serviceWorker';
 const sagaMiddleware = createSageMiddleware();
 const store = createStore<any, any, any, any>(
   reducers,
-  applyMiddleware(sagaMiddleware)
+  composeWithDevTools(
+    applyMiddleware(sagaMiddleware)
+  )
 );
 
 sagaMiddleware.run(sagas);
