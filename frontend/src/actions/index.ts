@@ -45,7 +45,9 @@ export interface IActions {
     } else {
       return {
         type: FILE_FIELD_ON_CHANGE,
-        payload: { files: files }
+        payload: {
+          files
+        }
       };
     }
   }

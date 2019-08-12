@@ -66,13 +66,17 @@ router.post('/create_image_note', isAuthenticated, upload, (req, res, next) => {
     return res.status(400).send('No request body or file');
   }
   // TODO
-  // req.body.fileLastModified は渡されてこないので
-  // req.file から拾う
-  const data = Object.assign({}, req.files, {
+  // req.body.fileLastModified は渡されてこなくなる？
+  // req.file から拾える？
+  // 
+  // req.files配列をすべてアップロードしたいが、
+  // いったん一つだけアップロード可能な実装にし、あとで修正する
+  const data = Object.assign({}, req.files[0], {
     lastModified: parseInt(req.body.fileLastModified, 10)
   });
-  if (req.file) {
-    evernoteService.createTodaysNoteWithImage(req.session.oauthToken, data).then((note) => {
+  if (req.files[0]) {
+    const token = req.headers.authorization.replace(/Bearer\s/, '') || req.session.oauthToken;
+    evernoteService.createTodaysNoteWithImage(token, data).then((note) => {
       res.send({
         success: true,
         note: note

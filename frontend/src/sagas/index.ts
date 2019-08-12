@@ -1,5 +1,6 @@
 import {call, put, takeEvery} from 'redux-saga/effects';
 import axios from 'axios';
+import { AxiosResponse, AxiosPromise } from 'axios';
 import queryString from 'query-string';
 import {
   SIGN_IN,
@@ -17,12 +18,12 @@ import { IFileFieldOnChangeAction } from '../actions/';
 import { UploadStatus } from '../reducers/'
 import { readFile, uploadFile } from '../services/file';
 
-function apiSignIn (): any {
+function apiSignIn (): AxiosPromise {
   const url = `${API_OAUTH_URL}/?callback_url=${encodeURIComponent(LOCAL_OAUTH_CALLBACK_URL)}`;
   return axios.get(url);
 }
 
-function apiOAuthCallback (): any {
+function apiOAuthCallback (): AxiosPromise {
   const query = queryString.parse(window.location.search);
   const newQuery = {
     oauthToken: window.sessionStorage.getItem('oauthToken'),
@@ -34,36 +35,48 @@ function apiOAuthCallback (): any {
 }
 
 function* signIn () {
-  const res: any = yield call(apiSignIn);
+  const res: AxiosResponse = yield call(apiSignIn);
   yield put({ type: SIGN_IN_SUCCESS, payload: res.data });
 }
 
 function* oauthCallback () {
-  const res: any = yield call(apiOAuthCallback);
+  const res: AxiosResponse = yield call(apiOAuthCallback);
+  sessionStorage.setItem('accessToken', res.data.accessToken);
   yield put({ type: OAUTH_CALLBACK_SUCCESS, payload: res.data });
 }
 
-function* fileFieldOnChange (action: IFileFieldOnChangeAction) {
+function* uploadFilesFromField (action: IFileFieldOnChangeAction) {
   const files: File[] = action.payload && action.payload.files;
-  if (!files) { return; }
+  const token: string = `Bearer ${sessionStorage.getItem('accessToken')}`;
+  if (!files || !files[0]) {
+    return;
+  }
+  const imageFiles = Array.prototype.filter.call(files, (f: File) => f.type.match('image.*'));
   let fileDataset = [];
-  for (let i = 0, l = files.length; i<l; i++) {
-    const f: File = files[i];
-    if (!f.type.match('image.*')) { continue; }
+  for (let i = 0, l = imageFiles.length; i<l; i++) {
+    const f: File = imageFiles[i];
     const fileData = yield readFile(f);
     yield put({ type: FILE_READ, payload: fileData });
     fileDataset.push(fileData);
   }
+  try {
+    for (let i = 0, l = imageFiles.length; i<l; i++) {
+      console.log('upload...:', imageFiles[i]);
+      yield call(uploadFile, imageFiles[i], token);
+    }
+  } catch (e) {
+    console.log('upload error:', e.message);
+  }
+
   const fileDatasetUploaded = fileDataset.map((fileData) => {
     fileData.status = UploadStatus.complete;
     return fileData;
   });
-  yield uploadFile(files);
   yield put({ type: UPLOAD_COMPLETE, payload: fileDatasetUploaded });
 }
 
 export default function* rootSaga () {
   yield takeEvery(SIGN_IN, signIn);
   yield takeEvery(OAUTH_CALLBACK, oauthCallback);
-  yield takeEvery(FILE_FIELD_ON_CHANGE, fileFieldOnChange)
+  yield takeEvery(FILE_FIELD_ON_CHANGE, uploadFilesFromField)
 }

@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { UploadStatus } from '../reducers/';
+import { API_CREATE_IMAGE_NOTE_URL } from '../constants';
 
 export function readFile(file: File) {
   return new Promise((resolve, reject) => {
@@ -15,23 +16,25 @@ export function readFile(file: File) {
   });
 }
 
-export function uploadFile (files: File[]) {
+export function uploadFile (file: File, token: string) {
   return new Promise((resolve, reject) => {
 
     // TODO:
     // 日付ごとに分割してリクエストする
     // const date = moment(file.lastModified);
     // const searchTitle = date.format('YYYY-MM-DD');
-
     const formData = new FormData();
-    for (let i=0,l=files.length; i<l; i++) {
-      formData.append('fileData[]', files[i]);
-    }
-    // formData.append('fileLastModified', file.lastModified.toString());
-    const headers: any = {
-      'Content-Type': 'multipart/form-data'
+    formData.append('fileData', file);
+    formData.append('fileLastModified', file.lastModified.toString());
+    const options: AxiosRequestConfig = {
+      method: 'post',
+      url: API_CREATE_IMAGE_NOTE_URL,
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'authorization': token
+      }
     };
-    const config: AxiosRequestConfig = { headers: headers };
-    axios.post('/create_image_note', formData, config).then(resolve, reject);
+    axios(options).then(resolve, reject);
   });
 }
