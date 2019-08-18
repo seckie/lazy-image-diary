@@ -37,7 +37,7 @@ export interface IActions {
   },
   fileFieldOnChange (e: React.FormEvent) {
     const el: any = e.currentTarget;
-    const files = el.files;
+    const files = el && el.files;
     if (!files) {
       return {
         type: FILE_FIELD_NO_FILE
