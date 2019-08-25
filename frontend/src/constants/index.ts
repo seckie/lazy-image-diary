@@ -10,4 +10,5 @@ export const OAUTH_CALLBACK_SUCCESS = 'actions/OAUTH_CALLBACK_SUCCESS';
 export const FILE_FIELD_ON_CHANGE = 'actions/FILE_FIELD_ON_CHANGE';
 export const FILE_FIELD_NO_FILE = 'actions/FILE_FIELD_NO_FILE';
 export const FILE_READ = 'actions/FILE_READ';
+export const FILE_HANDLE_ERROR = 'actions/FILE_HANDLE_ERROR';
 export const UPLOAD_COMPLETE = 'actions/UPLOAD_COMPLETE';
