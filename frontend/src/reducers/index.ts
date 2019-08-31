@@ -2,32 +2,28 @@ import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
   FILE_READ,
-  UPLOAD_COMPLETE
+  UPLOAD_COMPLETE,
+  UPLOAD_STATUS
 } from '../constants/';
 
 export interface ISignInResponse {
-  authorizeUrl: string;
-  oauthToken: string;
-  oauthTokenSecret: string;
+  authorizeUrl?: string;
+  oauthToken?: string;
+  oauthTokenSecret?: string;
 }
 
 export interface IOAuthCallbackResponse {
-  accessToken: string,
-  user: object
+  accessToken?: string,
+  user?: object
 }
 
 export interface IFileDataset {
-  fileDataset: IFileData[]
-}
-export enum UploadStatus {
-  uploading = 'uploading',
-  complete = 'complete',
-  failure = 'failure',
+  fileDataset?: IFileData[]
 }
 export interface IFileData {
   file: File,
   path: string,
-  status: UploadStatus
+  status: UPLOAD_STATUS
 }
 
 // TODO: modelへ持っていく
@@ -42,12 +38,23 @@ const initialState: IState = {
   fileDataset: []
 };
 
-export default function reducers (state = initialState, action: any) {
+interface IAction {
+  type: string,
+  payload: IState
+}
+
+export default function rootReducer (state = initialState, action: IAction) {
   switch (action.type) {
     case SIGN_IN_SUCCESS:
-      window.sessionStorage.setItem('oauthToken', action.payload!.oauthToken);
-      window.sessionStorage.setItem('oauthTokenSecret', action.payload!.oauthTokenSecret);
-      window.location.href = action.payload!.authorizeUrl;
+      if (
+        action.payload!.oauthToken &&
+        action.payload!.oauthTokenSecret &&
+        action.payload!.authorizeUrl
+      ) {
+        window.sessionStorage.setItem('oauthToken', action.payload!.oauthToken);
+        window.sessionStorage.setItem('oauthTokenSecret', action.payload!.oauthTokenSecret);
+        history.pushState(null, 'Upload images', action.payload!.authorizeUrl);
+      }
       return state;
     case OAUTH_CALLBACK_SUCCESS:
       window.sessionStorage.removeItem('oauthToken');
@@ -60,7 +67,7 @@ export default function reducers (state = initialState, action: any) {
     case FILE_READ:
       return {
         ...state,
-        fileDataset: state.fileDataset.concat(action.payload)
+        fileDataset: state.fileDataset!.concat(action.payload.fileDataset!)
       };
     case UPLOAD_COMPLETE:
       return {
