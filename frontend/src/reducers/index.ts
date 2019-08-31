@@ -18,7 +18,8 @@ export interface IOAuthCallbackResponse {
 }
 
 export interface IFileDataset {
-  fileDataset?: IFileData[]
+  fileDataset?: IFileData[],
+  uploadingFileDataset?: IFileData[]
 }
 export interface IFileData {
   file: File,
@@ -35,10 +36,11 @@ export const initialState: IState = {
   authorizeUrl: '',
   oauthToken: '',
   oauthTokenSecret: '',
-  fileDataset: []
+  fileDataset: [],
+  uploadingFileDataset: [],
 };
 
-interface IAction {
+export interface IAction {
   type: string,
   payload: IState
 }
@@ -67,12 +69,13 @@ export default function rootReducer (state = initialState, action: IAction) {
     case FILE_READ:
       return {
         ...state,
-        fileDataset: state.fileDataset!.concat(action.payload.fileDataset!)
+        uploadingFileDataset: state.uploadingFileDataset!.concat(action.payload.uploadingFileDataset!)
       };
     case UPLOAD_COMPLETE:
       return {
         ...state,
-        fileDataset: action.payload
+        fileDataset: state.fileDataset!.concat(action.payload.fileDataset!),
+        uploadingFileDataset: initialState.uploadingFileDataset
       };
     default:
       return state;

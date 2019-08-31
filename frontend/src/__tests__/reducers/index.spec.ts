@@ -3,7 +3,8 @@ import { initialState } from '../../reducers';
 import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
-  FILE_READ
+  FILE_READ,
+  UPLOAD_COMPLETE
 } from '../../constants';
 
 describe('reducer', () => {
@@ -78,12 +79,39 @@ describe('reducer', () => {
     const action = {
       type: FILE_READ,
       payload: {
+        uploadingFileDataset: FILE_DATASET
+      }
+    };
+    const state = {
+      ...initialState,
+      uploadingFileDataset: INITIAL_FILE_DATASET
+    };
+    let res: any;
+    beforeAll(() => {
+      res = reducer(state, action);
+    });
+    it('return new state updated with "fileDataset"', () => {
+      const expected = {
+        ...state,
+        uploadingFileDataset: INITIAL_FILE_DATASET.concat(FILE_DATASET)
+      };
+      expect(res).toEqual(expected);
+    });
+  });
+
+  describe('UPLOAD_COMPLETE action type', () => {
+    const INITIAL_FILE_DATASET = [ 'foo' as any ];
+    const FILE_DATASET = [ 'bar' as any ];
+    const action = {
+      type: UPLOAD_COMPLETE,
+      payload: {
         fileDataset: FILE_DATASET
       }
     };
     const state = {
       ...initialState,
-      fileDataset: INITIAL_FILE_DATASET
+      fileDataset: INITIAL_FILE_DATASET,
+      uploadingFileDataset: INITIAL_FILE_DATASET
     };
     let res: any;
     beforeAll(() => {
@@ -95,6 +123,31 @@ describe('reducer', () => {
         fileDataset: state.fileDataset.concat(FILE_DATASET)
       };
       expect(res).toEqual(expected);
+    });
+    it('reset "uploadingFileDataset" to initial', () => {
+      expect(res.uploadingFileDataset).toEqual(initialState.uploadingFileDataset);
+    });
+  });
+
+  describe('default action type', () => {
+    const action = {
+      type: 'DEFAULT',
+      payload: {
+        accessToken: 'token',
+        user: { name: 'name' },
+        authorizeUrl: 'url',
+        oauthToken: 'token',
+        oauthTokenSecret: 'token_secret',
+        fileDataset: [ 'foo' as any ],
+        uploadingFileDataset: [ 'bar' as any ],
+      }
+    };
+    let res: any;
+    beforeAll(() => {
+      res = reducer(undefined, action);
+    });
+    it('return initial state', () => {
+      expect(res).toEqual(initialState);
     });
   });
 });

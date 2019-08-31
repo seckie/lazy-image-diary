@@ -155,9 +155,12 @@ describe('Sagas', () => {
 
     it('put FILE_READ action with payload for the number of "files" length', async () => {
       await runSaga(sagaIO, uploadFilesFromField, action).toPromise();
+      const payload = {
+        fileDataset: [ readFileRes ]
+      };
       const expected = [
-        { type: FILE_READ, payload: readFileRes },
-        { type: FILE_READ, payload: readFileRes }
+        { type: FILE_READ, payload },
+        { type: FILE_READ, payload }
       ];
       expect(dispatched.slice(0, 2)).toEqual(expected);
     });

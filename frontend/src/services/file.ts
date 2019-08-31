@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { UploadStatus } from '../reducers/';
+import { UPLOAD_STATUS } from '../constants/';
 import { API_CREATE_IMAGE_NOTE_URL } from '../constants';
 
 export function readFile(file: File) {
@@ -9,7 +9,7 @@ export function readFile(file: File) {
       resolve({
         file: file,
         path: e.target.result,
-        status: UploadStatus.uploading
+        status: UPLOAD_STATUS.uploading
       });
     };
     reader.readAsDataURL(file);

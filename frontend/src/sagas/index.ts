@@ -14,6 +14,7 @@ import { apiSignIn, apiOAuthCallback } from '../services/api';
 import { IFileFieldOnChangeAction } from '../actions/';
 import { UPLOAD_STATUS } from '../constants/'
 import { readFile, uploadFile } from '../services/file';
+import { IAction } from '../reducers';
 
 
 export function* signIn () {
@@ -42,7 +43,13 @@ export function* uploadFilesFromField (action: IFileFieldOnChangeAction) {
     for (let i = 0, l = imageFiles.length; i < l; i++) {
       const f: File = imageFiles[i];
       const fileData = yield readFile(f);
-      yield put({ type: FILE_READ, payload: fileData });
+      const action: IAction = {
+         type: FILE_READ,
+         payload: {
+           fileDataset: [fileData]
+         }
+      };
+      yield put(action);
       fileDataset.push(fileData);
     }
     for (let i = 0, l = imageFiles.length; i < l; i++) {
