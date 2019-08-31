@@ -18,7 +18,9 @@ import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
   FILE_READ,
-  FILE_HANDLE_ERROR
+  FILE_HANDLE_ERROR,
+  UPLOAD_COMPLETE,
+  UPLOAD_STATUS
 } from '../../constants';
 
 describe('Sagas', () => {
@@ -165,6 +167,19 @@ describe('Sagas', () => {
       const token = `Bearer ${TOKEN}`;
       expect(uploadFile).nthCalledWith(1, FILES[0], token);
       expect(uploadFile).nthCalledWith(2, FILES[1], token);
+    });
+
+    it('put UPLOAD_COMPLETE with payload', async () => {
+      await runSaga(sagaIO, uploadFilesFromField, action).toPromise();
+      const FILES_COMPLETED = [
+        { status: UPLOAD_STATUS.complete },
+        { status: UPLOAD_STATUS.complete }
+      ];
+      const expected = {
+        type: UPLOAD_COMPLETE,
+        payload: FILES_COMPLETED
+      };
+      expect(dispatched[dispatched.length - 1]).toEqual(expected);
     });
 
     it('put FILE_HANDLE_ERROR if readFile() was failed', async () => {

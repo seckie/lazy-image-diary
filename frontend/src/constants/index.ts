@@ -12,3 +12,9 @@ export const FILE_FIELD_NO_FILE = 'actions/FILE_FIELD_NO_FILE';
 export const FILE_READ = 'actions/FILE_READ';
 export const FILE_HANDLE_ERROR = 'actions/FILE_HANDLE_ERROR';
 export const UPLOAD_COMPLETE = 'actions/UPLOAD_COMPLETE';
+
+export enum UPLOAD_STATUS {
+  uploading = 'uploading',
+  complete = 'complete',
+  failure = 'failure',
+}

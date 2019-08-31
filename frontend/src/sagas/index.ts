@@ -12,7 +12,7 @@ import {
 } from '../constants';
 import { apiSignIn, apiOAuthCallback } from '../services/api';
 import { IFileFieldOnChangeAction } from '../actions/';
-import { UploadStatus } from '../reducers/'
+import { UPLOAD_STATUS } from '../constants/'
 import { readFile, uploadFile } from '../services/file';
 
 
@@ -37,29 +37,29 @@ export function* uploadFilesFromField (action: IFileFieldOnChangeAction) {
   if (!imageFiles || !imageFiles[0]) {
     return;
   }
-  let fileDataset = [];
   try {
+    let fileDataset = [];
     for (let i = 0, l = imageFiles.length; i < l; i++) {
       const f: File = imageFiles[i];
       const fileData = yield readFile(f);
       yield put({ type: FILE_READ, payload: fileData });
       fileDataset.push(fileData);
+    }
+    for (let i = 0, l = imageFiles.length; i < l; i++) {
       yield call(uploadFile, imageFiles[i], token);
     }
+    const fileDatasetUploaded = fileDataset.map((fileData) => {
+      fileData.status = UPLOAD_STATUS.complete;
+      return fileData;
+    });
+    yield put({ type: UPLOAD_COMPLETE, payload: fileDatasetUploaded });
   } catch (e) {
-    console.log('upload error:', e.message);
     const payload = {
-      message: e.message
+      message: typeof e.message === 'string' ? e.message : e
     };
     yield put({ type: FILE_HANDLE_ERROR, payload });
     return;
   }
-
-  const fileDatasetUploaded = fileDataset.map((fileData) => {
-    fileData.status = UploadStatus.complete;
-    return fileData;
-  });
-  yield put({ type: UPLOAD_COMPLETE, payload: fileDatasetUploaded });
 }
 
 export default function* rootSaga () {
