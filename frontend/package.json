@@ -49,5 +49,12 @@
     "enzyme-adapter-react-16": "^1.14.0",
     "react-test-renderer": "^16.9.0",
     "redux-devtools-extension": "^2.13.8"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/**/constants/**/*"
+    ]
   }
 }
