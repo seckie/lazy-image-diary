@@ -1,6 +1,9 @@
 import reducer from '../../reducers';
+import { initialState } from '../../reducers';
 import {
-  SIGN_IN_SUCCESS, OAUTH_CALLBACK_SUCCESS
+  SIGN_IN_SUCCESS,
+  OAUTH_CALLBACK_SUCCESS,
+  FILE_READ
 } from '../../constants';
 
 describe('reducer', () => {
@@ -69,21 +72,29 @@ describe('reducer', () => {
     });
   });
 
-  describe('OAUTH_CALLBACK_SUCCESS action type', () => {
-    it('', () => {
-
+  describe('FILE_READ action type', () => {
+    const INITIAL_FILE_DATASET = [ 'foo' as any ];
+    const FILE_DATASET = [ 'bar' as any ];
+    const action = {
+      type: FILE_READ,
+      payload: {
+        fileDataset: FILE_DATASET
+      }
+    };
+    const state = {
+      ...initialState,
+      fileDataset: INITIAL_FILE_DATASET
+    };
+    let res: any;
+    beforeAll(() => {
+      res = reducer(state, action);
     });
-  });
-
-  describe('OAUTH_CALLBACK_SUCCESS action type', () => {
-    it('', () => {
-
-    });
-  });
-
-  describe('OAUTH_CALLBACK_SUCCESS action type', () => {
-    it('', () => {
-
+    it('return new state updated with "fileDataset"', () => {
+      const expected = {
+        ...initialState,
+        fileDataset: state.fileDataset.concat(FILE_DATASET)
+      };
+      expect(res).toEqual(expected);
     });
   });
 });

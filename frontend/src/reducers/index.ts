@@ -29,7 +29,7 @@ export interface IFileData {
 // TODO: modelへ持っていく
 export type IState = ISignInResponse & IOAuthCallbackResponse & IFileDataset;
 
-const initialState: IState = {
+export const initialState: IState = {
   accessToken: '',
   user: {},
   authorizeUrl: '',
