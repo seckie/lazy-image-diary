@@ -1,8 +1,7 @@
 import reducer from '../../reducers';
 import {
-  SIGN_IN_SUCCESS
+  SIGN_IN_SUCCESS, OAUTH_CALLBACK_SUCCESS
 } from '../../constants';
-import { OutgoingMessage } from 'http';
 
 describe('reducer', () => {
   describe('SIGN_IN_SUCCESS action type', () => {
@@ -17,13 +16,11 @@ describe('reducer', () => {
         authorizeUrl: AUTHORIZE_URL
       }
     };
-    let result: any = {};
-    const pushStateSpy = jest.spyOn(history, 'pushState').mockImplementation((data: any, title: string, url?: string | null) => {
-      result = { data, title, url }
-    });
+    const pushStateSpy = jest.spyOn(history, 'pushState').mockImplementation(() => null);
     const TITLE = 'Upload images';
-    
-    reducer(undefined, action);
+    beforeAll(() => {
+      reducer(undefined, action);
+    });
     afterAll(() => {
       sessionStorage.removeItem('oauthToken');
       sessionStorage.removeItem('oauthTokenSecret');
@@ -38,6 +35,55 @@ describe('reducer', () => {
     it('pushState should be called', () => {
       expect(pushStateSpy).toBeCalledWith(null, TITLE, AUTHORIZE_URL);
     });
+  });
 
+  describe('OAUTH_CALLBACK_SUCCESS action type', () => {
+    const ACCESS_TOKEN = 'token';
+    const USER = { name: 'test '};
+    const action = {
+      type: OAUTH_CALLBACK_SUCCESS,
+      payload: {
+        accessToken: ACCESS_TOKEN,
+        user: USER
+      }
+    };
+    let res: any;
+    beforeAll(() => {
+      sessionStorage.setItem('oauthToken', 'token');
+      sessionStorage.setItem('oauthTokenSecret', 'token_secret');
+      res = reducer(undefined, action);
+    });
+    it('sessionStorage doesn\'t have "oauthToken" item after the action', () => {
+      expect(sessionStorage.getItem('oauthToken')).toBe(null);
+    });
+    it('sessionStorage doesn\'t have "oauthTokenSecret" item after the action', () => {
+      expect(sessionStorage.getItem('oauthToken')).toBe(null);
+    });
+    it('return new state updated with accessToken and user', () => {
+      const expected = {
+        ...res,
+        accessToken: ACCESS_TOKEN,
+        user: USER
+      };
+      expect(res).toEqual(expected);
+    });
+  });
+
+  describe('OAUTH_CALLBACK_SUCCESS action type', () => {
+    it('', () => {
+
+    });
+  });
+
+  describe('OAUTH_CALLBACK_SUCCESS action type', () => {
+    it('', () => {
+
+    });
+  });
+
+  describe('OAUTH_CALLBACK_SUCCESS action type', () => {
+    it('', () => {
+
+    });
   });
 });
