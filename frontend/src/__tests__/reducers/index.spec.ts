@@ -12,32 +12,68 @@ describe('reducer', () => {
     const OAUTH_TOKEN = 'token';
     const OAUTH_TOKEN_SECRET = 'token_secret';
     const AUTHORIZE_URL = 'url';
-    const action = {
-      type: SIGN_IN_SUCCESS,
-      payload: {
-        oauthToken: OAUTH_TOKEN,
-        oauthTokenSecret: OAUTH_TOKEN_SECRET,
-        authorizeUrl: AUTHORIZE_URL
-      }
-    };
-    const pushStateSpy = jest.spyOn(history, 'pushState').mockImplementation(() => null);
-    const TITLE = 'Upload images';
-    beforeAll(() => {
-      reducer(undefined, action);
+    describe('with valid payload', () => {
+      const action = {
+        type: SIGN_IN_SUCCESS,
+        payload: {
+          oauthToken: OAUTH_TOKEN,
+          oauthTokenSecret: OAUTH_TOKEN_SECRET,
+          authorizeUrl: AUTHORIZE_URL
+        }
+      };
+      const pushStateSpy = jest.spyOn(history, 'pushState').mockImplementation(() => null);
+      const TITLE = 'Upload images';
+      beforeAll(() => {
+        reducer(undefined, action);
+      });
+      afterAll(() => {
+        sessionStorage.removeItem('oauthToken');
+        sessionStorage.removeItem('oauthTokenSecret');
+        pushStateSpy.mockClear();
+      });
+      it('sessionStorage has "oauthToken" item after the action', () => {
+        expect(sessionStorage.getItem('oauthToken')).toBe(OAUTH_TOKEN);
+      });
+      it('sessionStorage has "oauthToken" item after the action', () => {
+        expect(sessionStorage.getItem('oauthToken')).toBe(OAUTH_TOKEN);
+      });
+      it('pushState should be called', () => {
+        expect(pushStateSpy).toBeCalledWith(null, TITLE, AUTHORIZE_URL);
+      });
     });
-    afterAll(() => {
-      sessionStorage.removeItem('oauthToken');
-      sessionStorage.removeItem('oauthTokenSecret');
-      pushStateSpy.mockClear();
-    });
-    it('sessionStorage has "oauthToken" item after the action', () => {
-      expect(sessionStorage.getItem('oauthToken')).toBe(OAUTH_TOKEN);
-    });
-    it('sessionStorage has "oauthToken" item after the action', () => {
-      expect(sessionStorage.getItem('oauthToken')).toBe(OAUTH_TOKEN);
-    });
-    it('pushState should be called', () => {
-      expect(pushStateSpy).toBeCalledWith(null, TITLE, AUTHORIZE_URL);
+    describe('with invalid payload', () => {
+      it('make no mutations without "oauthToken" payload', () => {
+        const action = {
+          type: SIGN_IN_SUCCESS,
+          payload: {
+            oauthToken: OAUTH_TOKEN,
+          }
+        };
+        const res = reducer(undefined, action);
+        expect(res).toEqual(initialState);
+      });
+      it('make no mutations without "oauthTokenSecret" payload', () => {
+        const action = {
+          type: SIGN_IN_SUCCESS,
+          payload: {
+            oauthToken: OAUTH_TOKEN,
+            authorizeUrl: AUTHORIZE_URL
+          }
+        };
+        const res = reducer(undefined, action);
+        expect(res).toEqual(initialState);
+      });
+      it('make no mutations without "authorizeUrl" payload', () => {
+        const action = {
+          type: SIGN_IN_SUCCESS,
+          payload: {
+            oauthToken: OAUTH_TOKEN,
+            oauthTokenSecret: OAUTH_TOKEN_SECRET,
+          }
+        };
+        const res = reducer(undefined, action);
+        expect(res).toEqual(initialState);
+      });
     });
   });
 
