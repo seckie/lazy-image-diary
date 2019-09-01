@@ -1,7 +1,31 @@
+import axios, { AxiosRequestConfig } from 'axios';
 import { readFile, uploadFile } from '../../services/file';
-import { UPLOAD_STATUS } from '../../constants';
+import { UPLOAD_STATUS, API_CREATE_IMAGE_NOTE_URL } from '../../constants';
+jest.mock('axios', () => {
+  return jest.fn().mockImplementation((opt) => {
+    return new Promise((resolve, reject) => {
+      if (opt.headers.authorization) {
+        resolve('resolved');
+      } else {
+        reject('rejected');
+      }
+    });
+  });
+});
 
 describe('file service', () => {
+  const blob = new Blob(
+    [ { fileContents: 'foo' } as any ],
+    { type: 'text/plain' }
+  );
+  const FILE_NAME = 'name';
+  const lastModifiedTimestamp = (new Date('2019-09-01')).getTime();
+  const file = new File([blob], FILE_NAME, {
+    lastModified: lastModifiedTimestamp
+  });
+  const TOKEN = 'token';
+  let res: any;
+
   describe('readFile()', () => {
     const EV: any = {
       target: {
@@ -13,14 +37,7 @@ describe('file service', () => {
     });
     const fakeFileReaderInstance = { readAsDataURL };
     const fakeFileReader = jest.fn(() => fakeFileReaderInstance);
-    const blob = new Blob(
-      [ { fileContents: 'foo' } as any ],
-      { type: 'text/plain' }
-    );
-    const FILE_NAME = 'name';
-    const file = new File([blob], FILE_NAME);
     let originalFileReader: any;
-    let res: any;
     beforeEach(() => {
       originalFileReader = FileReader;
       Object.defineProperty(window, 'FileReader', {
@@ -52,6 +69,39 @@ describe('file service', () => {
       };
       res = await readFile(file);
       expect(res).toEqual(expected);
+    });
+  });
+
+  describe('uploadFile()', () => {
+    const formData = new FormData();
+    formData.append('fileData', file);
+    formData.append('fileLastModified', lastModifiedTimestamp.toString());
+    const opt: AxiosRequestConfig = {
+      method: 'post',
+      url: API_CREATE_IMAGE_NOTE_URL,
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'authorization': TOKEN 
+      }
+    };
+    let res: any;
+    it('return Promise', () => {
+      res = uploadFile(file, TOKEN);
+      expect(res instanceof Promise).toBe(true);
+    });
+    it('call axios with the POST args', () => {
+      res = uploadFile(file, TOKEN);
+      expect(axios).toBeCalledWith(opt)
+    });
+    it('return resolved axios response', async () => {
+      res = await uploadFile(file, TOKEN);
+      expect(res).toBe('resolved');
+    });
+    it('return rejected axios response', async () => {
+      await uploadFile(file, '').catch((e) => {
+        expect(e).toBe('rejected');
+      })
     });
   });
 });
