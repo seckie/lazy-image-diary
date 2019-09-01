@@ -1,11 +1,13 @@
 jest.mock('../../services/api');
 jest.mock('../../services/file');
 import { runSaga } from 'redux-saga';
+import { takeEvery } from 'redux-saga/effects';
 import {
   signIn,
   oauthCallback,
   uploadFilesFromField,
 } from '../../sagas';
+import rootSaga from '../../sagas';
 import {
   apiSignIn,
   apiOAuthCallback
@@ -20,10 +22,28 @@ import {
   FILE_READ,
   FILE_HANDLE_ERROR,
   UPLOAD_COMPLETE,
-  UPLOAD_STATUS
+  UPLOAD_STATUS,
+  SIGN_IN,
+  OAUTH_CALLBACK,
+  FILE_FIELD_ON_CHANGE
 } from '../../constants';
 
 describe('Sagas', () => {
+  describe('root saga', () => {
+    const saga = rootSaga();
+    it('1st yield value takes SIGN_IN action', () => {
+      const expected = takeEvery(SIGN_IN, signIn);
+      expect(saga.next().value).toEqual(expected);
+    });
+    it('2nd yield value takes OAUTH_CALLBACK action', () => {
+      const expected = takeEvery(OAUTH_CALLBACK, oauthCallback);
+      expect(saga.next().value).toEqual(expected);
+    });
+    it('3rd yield value takes FILE_FIELD_ON_CHANGE action', () => {
+      const expected = takeEvery(FILE_FIELD_ON_CHANGE, uploadFilesFromField);
+      expect(saga.next().value).toEqual(expected);
+    });
+  });
   describe('signIn saga', () => {
     const dispatched: any[] = [];
     const sagaIO = {
@@ -108,7 +128,6 @@ describe('Sagas', () => {
     const readFileRes: any = {
       status: 'undone'
     };
-    const readFileMock = (readFile as jest.Mock).mockImplementation(() => new Promise((resolve) => resolve(readFileRes)));
     const action: any = {
       payload: {
         files: FILES
@@ -119,13 +138,16 @@ describe('Sagas', () => {
         files: NON_IMAGE_FILES
       }
     };
+    let readFileMock: jest.Mock;
+    let uploadFileMock: jest.Mock;
     beforeEach(() => {
+      readFileMock = (readFile as jest.Mock).mockImplementation(() => new Promise((resolve) => resolve(readFileRes)));
       dispatched = [];
       sessionStorage.setItem('accessToken', TOKEN);
     });
     afterEach(() => {
       readFileMock.mockClear();
-      (uploadFile as jest.Mock).mockClear();
+      uploadFileMock && uploadFileMock.mockReset();
       sessionStorage.removeItem('accessToken');
     });
 
@@ -204,9 +226,24 @@ describe('Sagas', () => {
           payload: ERROR
         }
       ];
-      (uploadFile as jest.Mock).mockImplementation(() => { throw ERROR });
+      uploadFileMock = (uploadFile as jest.Mock).mockImplementation(() => { throw ERROR });
       await runSaga(sagaIO, uploadFilesFromField, action).toPromise();
-      expect(dispatched).toEqual(expected);
+      expect(dispatched.slice(-1)).toEqual(expected);
+    });
+
+    it('put FILE_HANDLE_ERROR if uploadFile() was failed with string payload', async () => {
+      const MESSAGE = 'message';
+      const expected = [
+        {
+          type: FILE_HANDLE_ERROR,
+          payload: {
+            message: MESSAGE
+          }
+        }
+      ];
+      (uploadFile as jest.Mock).mockImplementation(() => { throw MESSAGE });
+      await runSaga(sagaIO, uploadFilesFromField, action).toPromise();
+      expect(dispatched.slice(-1)).toEqual(expected);
     });
   });
 });
