@@ -4,7 +4,8 @@ import {Dispatch} from 'redux';
 import classNames from 'classnames';
 
 import actions from '../actions/';
-import { IFileData, UploadStatus } from '../reducers/';
+import { IFileData } from '../reducers/';
+import { UPLOAD_STATUS } from '../constants/';
 
 export function mapStateToProps (state: any) {
   return state;
@@ -27,7 +28,7 @@ interface IProps {
   onChange: () => void
 }
 
-const CreateDiary: React.FC<IProps> = (props) => {
+export const CreateDiary: React.FC<IProps> = (props) => {
   const tempUser: IUser = {
     name: 'User A'
   };
@@ -42,13 +43,13 @@ const CreateDiary: React.FC<IProps> = (props) => {
         {props.fileDataset.map((data: IFileData, i: number) => {
           const mediaCName = classNames({
             'media': true,
-            'media--uploading': data.status === UploadStatus.uploading
+            'media--uploading': data.status === UPLOAD_STATUS.uploading
           });
           return (
             <p className={mediaCName} key={`media${i}`}>
               <img className="thumb" src={data.path} title={global.escape(data.file.name)} alt={global.escape(data.file.name)} />
             </p>
-          );    
+          );
         })}
       </div>
       <p>
