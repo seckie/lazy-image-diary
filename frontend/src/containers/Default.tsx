@@ -18,12 +18,12 @@ export function mapDispatchToProps (dispatch: Dispatch) {
   };
 }
 
-class Default extends React.Component<IProps> {
+export class Default extends React.Component<IProps> {
   render () {
     return (
       <div className="App">
         <h1>Lazy Image Diary</h1>
-        <p><button className="btn.btn-evernote-signin" onClick={this.props.onClickSignIn}>Evernote Sign-in</button></p>
+        <p><button className="btn btn-evernote-signin" onClick={this.props.onClickSignIn}>Evernote Sign-in</button></p>
         <p>Lazy Image Diary is easy way to make diary on Evernote with your photos. <br />
           | All you need is sign-in with your Evernote account and upload your photos from the upload form. <br />
           | Then you would get auto generated posts with your photos on your Evernote "Diary" notebook.</p>
