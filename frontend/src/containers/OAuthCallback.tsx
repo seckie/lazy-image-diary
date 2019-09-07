@@ -21,7 +21,7 @@ export interface IProps {
   user: object
 }
 
-class OAuthCallback extends React.Component<IProps> {
+export class OAuthCallback extends React.Component<IProps> {
   componentDidMount () {
     this.props.oauthCallback();
   }

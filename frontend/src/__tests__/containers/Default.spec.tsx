@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { shallow } from 'enzyme';
-import { mapStateToProps, mapDispatchToProps } from '../../containers/Default';
-import { Default } from '../../containers/Default';
+import { Default, mapStateToProps, mapDispatchToProps } from '../../containers/Default';
 import actions from '../../actions';
 
 describe('Default', () => {
