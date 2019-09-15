@@ -141,7 +141,9 @@ describe('Sagas', () => {
     let readFileMock: jest.Mock;
     let uploadFileMock: jest.Mock;
     beforeEach(() => {
-      readFileMock = (readFile as jest.Mock).mockImplementation(() => new Promise((resolve) => resolve(readFileRes)));
+      readFileMock = (readFile as jest.Mock).mockImplementation((f: any) => new Promise((resolve) => {
+        resolve({ ...readFileRes, ...f });
+      }));
       dispatched = [];
       sessionStorage.setItem('accessToken', TOKEN);
     });
@@ -177,12 +179,15 @@ describe('Sagas', () => {
 
     it('put FILE_READ action with payload for the number of "files" length', async () => {
       await runSaga(sagaIO, uploadFilesFromField, action).toPromise();
-      const payload = {
-        fileDataset: [ readFileRes ]
+      const payload1 = {
+        fileDataset: [ { ...readFileRes, ...FILES[0] } ]
+      };
+      const payload2 = {
+        fileDataset: [ { ...readFileRes, ...FILES[1] } ]
       };
       const expected = [
-        { type: FILE_READ, payload },
-        { type: FILE_READ, payload }
+        { type: FILE_READ, payload: payload1 },
+        { type: FILE_READ, payload: payload2 }
       ];
       expect(dispatched.slice(0, 2)).toEqual(expected);
     });
@@ -197,12 +202,11 @@ describe('Sagas', () => {
     it('put UPLOAD_COMPLETE with payload', async () => {
       await runSaga(sagaIO, uploadFilesFromField, action).toPromise();
       const FILES_COMPLETED = [
-        { status: UPLOAD_STATUS.complete },
-        { status: UPLOAD_STATUS.complete }
+        { ...FILES[1], status: UPLOAD_STATUS.complete }
       ];
       const expected = {
         type: UPLOAD_COMPLETE,
-        payload: FILES_COMPLETED
+        payload: { fileDataset: FILES_COMPLETED }
       };
       expect(dispatched[dispatched.length - 1]).toEqual(expected);
     });

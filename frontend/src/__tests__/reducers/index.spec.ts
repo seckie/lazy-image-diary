@@ -1,11 +1,21 @@
 import reducer from '../../reducers';
-import { initialState } from '../../reducers';
+import { initialState, unionComparator } from '../../reducers';
 import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
   FILE_READ,
   UPLOAD_COMPLETE
 } from '../../constants';
+
+describe('utility function', () => {
+  it('unionComparator', () => {
+    const D1: any = { path: 'path1', status: 'complete' };
+    const D2: any = { path: 'path2', status: 'uploading' };
+    const D2_2: any = { path: 'path2', status: 'complete' };
+    expect(unionComparator(D1, D2)).toBe(false);
+    expect(unionComparator(D2, D2_2)).toBe(true);
+  });
+});
 
 describe('reducer', () => {
   describe('SIGN_IN_SUCCESS action type', () => {
@@ -21,15 +31,14 @@ describe('reducer', () => {
           authorizeUrl: AUTHORIZE_URL
         }
       };
-      const pushStateSpy = jest.spyOn(history, 'pushState').mockImplementation(() => null);
-      const TITLE = 'Upload images';
+      const locationAssignSpy = jest.spyOn(location, 'assign').mockImplementation(() => null);
       beforeAll(() => {
         reducer(undefined, action);
       });
       afterAll(() => {
         sessionStorage.removeItem('oauthToken');
         sessionStorage.removeItem('oauthTokenSecret');
-        pushStateSpy.mockClear();
+        locationAssignSpy.mockClear();
       });
       it('sessionStorage has "oauthToken" item after the action', () => {
         expect(sessionStorage.getItem('oauthToken')).toBe(OAUTH_TOKEN);
@@ -38,7 +47,7 @@ describe('reducer', () => {
         expect(sessionStorage.getItem('oauthToken')).toBe(OAUTH_TOKEN);
       });
       it('pushState should be called', () => {
-        expect(pushStateSpy).toBeCalledWith(null, TITLE, AUTHORIZE_URL);
+        expect(locationAssignSpy).toBeCalledWith(AUTHORIZE_URL);
       });
     });
     describe('with invalid payload', () => {
@@ -115,12 +124,12 @@ describe('reducer', () => {
     const action = {
       type: FILE_READ,
       payload: {
-        uploadingFileDataset: FILE_DATASET
+        fileDataset: FILE_DATASET
       }
     };
     const state = {
       ...initialState,
-      uploadingFileDataset: INITIAL_FILE_DATASET
+      fileDataset: INITIAL_FILE_DATASET
     };
     let res: any;
     beforeAll(() => {
@@ -129,7 +138,7 @@ describe('reducer', () => {
     it('return new state updated with "fileDataset"', () => {
       const expected = {
         ...state,
-        uploadingFileDataset: INITIAL_FILE_DATASET.concat(FILE_DATASET)
+        fileDataset: FILE_DATASET.concat(INITIAL_FILE_DATASET)
       };
       expect(res).toEqual(expected);
     });
@@ -146,8 +155,7 @@ describe('reducer', () => {
     };
     const state = {
       ...initialState,
-      fileDataset: INITIAL_FILE_DATASET,
-      uploadingFileDataset: INITIAL_FILE_DATASET
+      fileDataset: INITIAL_FILE_DATASET
     };
     let res: any;
     beforeAll(() => {
@@ -156,12 +164,9 @@ describe('reducer', () => {
     it('return new state updated with "fileDataset"', () => {
       const expected = {
         ...initialState,
-        fileDataset: state.fileDataset.concat(FILE_DATASET)
+        fileDataset: FILE_DATASET
       };
       expect(res).toEqual(expected);
-    });
-    it('reset "uploadingFileDataset" to initial', () => {
-      expect(res.uploadingFileDataset).toEqual(initialState.uploadingFileDataset);
     });
   });
 

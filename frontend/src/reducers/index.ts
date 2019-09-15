@@ -1,3 +1,4 @@
+import { unionWith } from 'lodash';
 import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
@@ -19,7 +20,6 @@ export interface IOAuthCallbackResponse {
 
 export interface IFileDataset {
   fileDataset?: IFileData[],
-  uploadingFileDataset?: IFileData[]
 }
 export interface IFileData {
   file: File,
@@ -27,7 +27,6 @@ export interface IFileData {
   status: UPLOAD_STATUS
 }
 
-// TODO: modelへ持っていく
 export type IState = ISignInResponse & IOAuthCallbackResponse & IFileDataset;
 
 export const initialState: IState = {
@@ -36,13 +35,16 @@ export const initialState: IState = {
   authorizeUrl: '',
   oauthToken: '',
   oauthTokenSecret: '',
-  fileDataset: [],
-  uploadingFileDataset: [],
+  fileDataset: []
 };
 
 export interface IAction {
   type: string,
   payload: IState
+}
+
+export function unionComparator (newData: IFileData, baseData: IFileData) {
+  return newData.path === baseData.path;
 }
 
 export default function rootReducer (state = initialState, action: IAction) {
@@ -55,7 +57,7 @@ export default function rootReducer (state = initialState, action: IAction) {
       ) {
         window.sessionStorage.setItem('oauthToken', action.payload!.oauthToken);
         window.sessionStorage.setItem('oauthTokenSecret', action.payload!.oauthTokenSecret);
-        history.pushState(null, 'Upload images', action.payload!.authorizeUrl);
+        window.location.assign(action.payload!.authorizeUrl);
       }
       return state;
     case OAUTH_CALLBACK_SUCCESS:
@@ -69,13 +71,12 @@ export default function rootReducer (state = initialState, action: IAction) {
     case FILE_READ:
       return {
         ...state,
-        uploadingFileDataset: state.uploadingFileDataset!.concat(action.payload.uploadingFileDataset!)
+        fileDataset: initialState.fileDataset!.concat(action.payload.fileDataset!, state.fileDataset!)
       };
     case UPLOAD_COMPLETE:
       return {
         ...state,
-        fileDataset: state.fileDataset!.concat(action.payload.fileDataset!),
-        uploadingFileDataset: initialState.uploadingFileDataset
+        fileDataset: unionWith(action.payload.fileDataset!, state.fileDataset!, unionComparator)
       };
     default:
       return state;
