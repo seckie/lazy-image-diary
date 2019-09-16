@@ -52,6 +52,19 @@ export function* uploadFilesFromField (action: IFileFieldOnChangeAction) {
       yield put(action);
       fileDataset.push(fileData);
     }
+
+    yield call(uploadFile, imageFiles, token);
+    fileDataset = fileDataset.map((data) => {
+      return {
+        ...data,
+        status: UPLOAD_STATUS.complete
+      }
+    });
+    yield put({
+      type: UPLOAD_COMPLETE,
+      payload: { fileDataset }
+    });
+    /*
     for (let i = 0, l = fileDataset.length; i < l; i++) {
       yield call(uploadFile, imageFiles[i], token);
       const fileData = {
@@ -65,6 +78,7 @@ export function* uploadFilesFromField (action: IFileFieldOnChangeAction) {
         }
       });
     }
+    */
   } catch (e) {
     const payload = {
       message: typeof e.message === 'string' ? e.message : e

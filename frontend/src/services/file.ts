@@ -16,7 +16,7 @@ export function readFile(file: File) {
   });
 }
 
-export function uploadFile (file: File, token: string) {
+export function uploadFile (files: File[], token: string) {
   return new Promise((resolve, reject) => {
 
     // TODO:
@@ -24,8 +24,10 @@ export function uploadFile (file: File, token: string) {
     // const date = moment(file.lastModified);
     // const searchTitle = date.format('YYYY-MM-DD');
     const formData = new FormData();
-    formData.append('fileData', file);
-    formData.append('fileLastModified', file.lastModified.toString());
+    for (let file of files) {
+      formData.append('fileData', file);
+      formData.append('fileLastModified', file.lastModified.toString());
+    }
     const options: AxiosRequestConfig = {
       method: 'post',
       url: API_CREATE_IMAGE_NOTE_URL,

@@ -4,6 +4,7 @@ const createError = require('http-errors');
 const evernoteService = require('../services/evernote-service.js');
 const isAuthenticated = require('../middlewares/isAuthenticated');
 const {MAX_FILE_SIZE, CALLBACK_URL} = require('../config/app-config');
+const { isArray } = require('lodash');
 
 const multer = require('multer');
 const storage = multer.memoryStorage(); // Don't use disk storage
@@ -66,15 +67,13 @@ router.post('/create_image_note', isAuthenticated, upload, (req, res, next) => {
     return res.status(400).send('No request body or file');
   }
   // TODO
-  // req.body.fileLastModified は渡されてこなくなる？
-  // req.file から拾える？
-  // 
   // req.files配列をすべてアップロードしたいが、
   // いったん一つだけアップロード可能な実装にし、あとで修正する
-  const data = Object.assign({}, req.files[0], {
-    lastModified: parseInt(req.body.fileLastModified, 10)
-  });
-  if (req.files[0]) {
+  for (let i = 0, l = req.files.length; i < l; i++) {
+    const file = req.files[i];
+    const data = Object.assign({}, file, {
+      lastModified: parseInt(isArray(req.body.fileLastModified) ? req.body.fileLastModified[i] : req.body.fileLastModified, 10)
+    });
     const token = req.headers.authorization.replace(/Bearer\s/, '') || req.session.oauthToken;
     evernoteService.createTodaysNoteWithImage(token, data).then((note) => {
       res.send({
