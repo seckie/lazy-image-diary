@@ -1,7 +1,7 @@
 const request = require('supertest');
-const evernoteService = require('../../src/server/services/evernote-service');
+const evernoteService = require('../../src/services/evernote-service');
 const Evernote = require('evernote');
-const { JSDOM } = require("jsdom");
+const { JSDOM } = require('jsdom');
 
 describe('evernote-service.js', () => {
   const OAUTH_TOKEN = 'oauthToken';

@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../src/server/app');
+const app = require('../src/app');
 
 describe('app.js', () => {
   it('example', () => {
