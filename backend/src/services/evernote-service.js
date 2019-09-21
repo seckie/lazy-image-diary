@@ -2,11 +2,11 @@
 const crypto = require('crypto');
 const Evernote = require('evernote');
 const moment = require('moment');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const secret = require('../config/secret');
 const dateService = require('./date-service');
-const {SANDBOX, NOTEBOOK_NAME} = require('../config/app-config');
+const { SANDBOX, NOTEBOOK_NAME } = require('../config/app-config');
 
 class EvernoteService {
   constructor() {
@@ -17,7 +17,7 @@ class EvernoteService {
     // initialize OAuth
     const initializeOpt = Object.assign({}, this.AUTH_OPT_BASE, {
       consumerKey: secret.evernote.consumerKey,
-      consumerSecret: secret.evernote.consumerSecret,
+      consumerSecret: secret.evernote.consumerSecret
     });
     this.client = new Evernote.Client(initializeOpt);
   }
@@ -41,62 +41,64 @@ class EvernoteService {
   getAccessToken(req) {
     return new Promise((resolve, reject) => {
       console.log(req.query.oauthToken);
-      this.client.getAccessToken(req.query.oauthToken,
+      this.client.getAccessToken(
+        req.query.oauthToken,
         req.query.oauthTokenSecret,
         req.query.oauth_verifier,
         (error, accessToken, oauthTokenSecret, results) => {
           if (error) {
             reject(error);
           } else if (!accessToken) {
-            reject({message: 'No token'});
+            reject({ message: 'No token' });
           } else {
             this.authenticatedClient = this.getAuthenticatedClient(accessToken);
             resolve(accessToken);
           }
-        });
+        }
+      );
     });
   }
 
-  getAuthenticatedClient (accessToken) {
+  getAuthenticatedClient(accessToken) {
     if (!this.authenticatedClient) {
       if (!accessToken) {
         throw new Error('No auth information to use getUser()');
       }
-      const authOpt = Object.assign({}, this.AUTH_OPT_BASE, {token: accessToken});
+      const authOpt = Object.assign({}, this.AUTH_OPT_BASE, { token: accessToken });
       this.authenticatedClient = new Evernote.Client(authOpt);
     }
     return this.authenticatedClient;
   }
 
-  getUser () {
+  getUser() {
     const userStore = this.authenticatedClient.getUserStore();
     return userStore.getUser();
   }
 
-  getNoteStore () {
+  getNoteStore() {
     if (!this.noteStore) {
       this.noteStore = this.authenticatedClient.getNoteStore();
     }
     return this.noteStore;
   }
 
-  getDiaryNotebook () {
+  getDiaryNotebook() {
     return new Promise((resolve, reject) => {
       const noteStore = this.getNoteStore();
-      noteStore.listNotebooks().then((notebooks) => {
-        const diary = notebooks.find((notebook) => {
+      noteStore.listNotebooks().then(notebooks => {
+        const diary = notebooks.find(notebook => {
           return notebook.name === NOTEBOOK_NAME;
         });
         if (diary) {
           resolve(diary);
         } else {
-          reject({message: 'No "Diary" notebook was found.'});
+          reject({ message: 'No "Diary" notebook was found.' });
         }
       }, reject);
-    })
+    });
   }
 
-  searchNotesWithTitle (noteStore, title) {
+  searchNotesWithTitle(noteStore, title) {
     return new Promise((resolve, reject) => {
       const filter = new Evernote.NoteStore.NoteFilter({
         words: `notebook:${NOTEBOOK_NAME} intitle:${title}`
@@ -112,19 +114,19 @@ class EvernoteService {
         includeTagGuids: false,
         includeAttributes: true,
         includeLargestResourceMime: false,
-        includeLargestResourceSize: false,
+        includeLargestResourceSize: false
       });
-      noteStore.findNotesMetadata(filter, 0, 100, spec).then((res) => {
-        const promises = res.notes.map((note) => {
+      noteStore.findNotesMetadata(filter, 0, 100, spec).then(res => {
+        const promises = res.notes.map(note => {
           return new Promise((resolve2, reject2) => {
-            noteStore.getNote(note.guid, false, true, false, false).then((noteData) => {
+            noteStore.getNote(note.guid, false, true, false, false).then(noteData => {
               console.log(noteData);
               note.resources = noteData.resources;
               resolve2(note);
             }, reject2);
           });
         });
-        Promise.all(promises).then((notes) => {
+        Promise.all(promises).then(notes => {
           res.notes = notes;
           resolve(res);
         }, reject);
@@ -132,10 +134,10 @@ class EvernoteService {
     });
   }
 
-  createTodaysNoteWithImage (oauthToken, data) {
+  createTodaysNoteWithImage(oauthToken, data) {
     return new Promise((resolve, reject) => {
       const noteStore = this.getNoteStore();
-      this.getDiaryNotebook().then((notebook) => {
+      this.getDiaryNotebook().then(notebook => {
         this._makeImageNote(oauthToken, notebook, data).then(resolve, reject);
       });
     });
@@ -152,9 +154,9 @@ class EvernoteService {
       const noteStore = this.getNoteStore();
       const date = moment(file.lastModified);
       const searchTitle = date.format('YYYY-MM-DD');
-      const title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`
+      const title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`;
       // - Search a note of today
-      evernoteService.searchNotesWithTitle(noteStore, searchTitle).then((res) => {
+      evernoteService.searchNotesWithTitle(noteStore, searchTitle).then(res => {
         const { resource, hexHash } = this._makeResource(file);
         // Create body
         const notes = res.notes;
@@ -167,12 +169,12 @@ class EvernoteService {
         if (theNote) {
           // Already the note exists so update it
           const noteStore = this.getNoteStore();
-          noteStore.getNoteContent(theNote.guid).then((content) => {
+          noteStore.getNoteContent(theNote.guid).then(content => {
             const media = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
             const dom = this._makeNewDom(content, file.lastModified, media);
             const newNote = this._makeUpdatedNote(theNote, dom.window.document.body.innerHTML, resource);
             noteStore.updateNote(newNote).then(resolve, reject);
-          }, reject)
+          }, reject);
         } else {
           // Make new note
           const ourNote = new Evernote.Types.Note();
@@ -190,7 +192,10 @@ class EvernoteService {
   }
 
   _makeResource(file) {
-    const hexHash = crypto.createHash('md5').update(file.buffer).digest('hex');
+    const hexHash = crypto
+      .createHash('md5')
+      .update(file.buffer)
+      .digest('hex');
 
     const data = new Evernote.Types.Data();
     data.body = file.buffer;
@@ -205,7 +210,7 @@ class EvernoteService {
     return { resource, hexHash };
   }
 
-  _makeNewEntryBodyString (resource, hexHash, timeString) {
+  _makeNewEntryBodyString(resource, hexHash, timeString) {
     const nBody = `<?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
     <en-note>
@@ -214,7 +219,7 @@ class EvernoteService {
     <p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>
     <br />
     </div>
-    </en-note>`
+    </en-note>`;
     return nBody;
   }
 
@@ -235,8 +240,8 @@ class EvernoteService {
     const newMediaNode = dom.window.document.createElement('p');
     const newBrNode = dom.window.document.createElement('br');
     newNode.setAttribute('title', 'section');
-    newTimeNode.setAttribute('title', 'time')
-    newMediaNode.setAttribute('title', 'media')
+    newTimeNode.setAttribute('title', 'time');
+    newMediaNode.setAttribute('title', 'media');
     newTimeNode.innerHTML = date.format('HH:mm:ss');
     newMediaNode.innerHTML = mediaENML;
     newNode.appendChild(newTimeNode);
@@ -265,12 +270,13 @@ class EvernoteService {
     const newNote = new Evernote.Types.Note();
     newNote.title = originalNote.title;
     newNote.content = nBody;
-    newNote.resources = originalNote.resources && originalNote.resources.length ? originalNote.resources.concat(resource) : [resource];
+    newNote.resources =
+      originalNote.resources && originalNote.resources.length ? originalNote.resources.concat(resource) : [resource];
     newNote.guid = originalNote.guid;
     return newNote;
   }
 
-  _removeUnnecessaryBreak (content) {
+  _removeUnnecessaryBreak(content) {
     return content
       .replace(/(<[hb]r[^>]*>)+<\/en-media>/gi, '</en-media>')
       .replace(/(&nbsp;)+<\/en-media>/gi, '</en-media>')
@@ -278,7 +284,6 @@ class EvernoteService {
       .replace(/<hr>(<\/\s?hr>)?/gi, '<hr/>');
   }
 }
-
 
 const evernoteService = new EvernoteService();
 

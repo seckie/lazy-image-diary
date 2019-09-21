@@ -3,7 +3,7 @@ const moment = require('moment');
 const _ = require('lodash');
 
 const dateService = {
-  getIndexOfInsertPosition (hmsTimes, momentValue) {
+  getIndexOfInsertPosition(hmsTimes, momentValue) {
     if (!_.isArray(hmsTimes)) {
       throw new Error('"hmsTimes" argument must be an array');
     }
@@ -12,7 +12,7 @@ const dateService = {
       throw new Error('"momentValue" argument must be valid format for moment.js');
     }
     let index = hmsTimes.length;
-    for (let i = 0, l = hmsTimes.length; i<l; i++) {
+    for (let i = 0, l = hmsTimes.length; i < l; i++) {
       const m = this.makeHMSChangedNewMoment(newMoment, hmsTimes[i]);
       if (newMoment.valueOf() < m.valueOf()) {
         index = i;
@@ -22,7 +22,7 @@ const dateService = {
     return index;
   },
 
-  makeHMSChangedNewMoment (currentMoment, hms) {
+  makeHMSChangedNewMoment(currentMoment, hms) {
     const m = moment(currentMoment.valueOf());
     const hmsArray = hms.split(':');
     if (!hmsArray[1] || !hmsArray[2]) {

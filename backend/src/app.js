@@ -8,7 +8,7 @@ const session = require('express-session');
 const cors = require('cors');
 
 const secret = require('./config/secret.js');
-const {MAX_REQUEST_SIZE} = require('./config/app-config');
+const { MAX_REQUEST_SIZE } = require('./config/app-config');
 
 const indexRouter = require('./routes/index');
 
@@ -16,9 +16,11 @@ const app = express();
 
 // cors
 if (app.get('env') !== 'production') {
-  app.use(cors({
-    origin: 'http://localhost:3000'
-  }));
+  app.use(
+    cors({
+      origin: 'http://localhost:3000'
+    })
+  );
 }
 
 // session
@@ -29,7 +31,7 @@ const sessionConfig = {
   saveUninitialized: false
 };
 if (app.get('env') === 'production') {
-  app.set('trust proxy', 1) // trust first proxy
+  app.set('trust proxy', 1); // trust first proxy
   sessionConfig.cookie = {
     secure: true // serve secure cookies
   };
@@ -73,4 +75,3 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
-

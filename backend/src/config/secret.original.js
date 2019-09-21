@@ -1,11 +1,11 @@
 const secret = {
   evernote: {
-    consumerKey: "",
-    consumerSecret: ""
+    consumerKey: '',
+    consumerSecret: ''
   },
   session: {
-    secret: "",
-    name: ""
+    secret: '',
+    name: ''
   }
 };
 
