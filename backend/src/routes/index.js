@@ -79,30 +79,26 @@ router.post(
       console.log('No body or file');
       return res.status(400).send('No request body or file');
     }
+    const token = req.headers.authorization.replace(/Bearer\s/, '') || req.session.oauthToken;
     // TODO
     // req.files配列をすべてアップロードしたいが、
     // いったん一つだけアップロード可能な実装にし、あとで修正する
-    for (let i = 0, l = req.files.length; i < l; i++) {
-      const file = req.files[i];
-      const data = Object.assign({}, file, {
-        lastModified: parseInt(
-          Array.isArray(req.body.fileLastModified) ? req.body.fileLastModified[i] : req.body.fileLastModified,
-          10
-        )
-      });
-      const token = req.headers.authorization.replace(/Bearer\s/, '') || req.session.oauthToken;
-      evernoteService.createTodaysNoteWithImage(token, data).then(
-        note => {
-          res.send({
-            success: true,
-            note: note
-          });
-        },
-        err => {
-          res.status(400).send(err.message || err.parameter);
-        }
-      );
-    }
+    const lastModifiedStrings = JSON.parse(req.body.fileLastModified);
+    const dataset = req.files.map((file, i) => ({
+      ...file,
+      lastModified: parseInt(lastModifiedStrings[i], 10)
+    }));
+    evernoteService.createImageNotes(token, dataset).then(
+      note => {
+        res.send({
+          success: true,
+          note: note
+        });
+      },
+      err => {
+        res.status(400).send(err.message || err.parameter);
+      }
+    );
   },
   (err, req, res, next) => {
     // Upload error

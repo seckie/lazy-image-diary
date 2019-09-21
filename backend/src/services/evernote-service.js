@@ -136,11 +136,11 @@ class EvernoteService {
   async createImageNotes(oauthToken, dataset) {
     const notebook = await this.getDiaryNotebook();
     const splitedDatasets = dateService.splitDatasetByLastModified(dataset);
-    const promises = splitedDatasets.map(list => this._makeImageNote(oauthToken, notebook, list));
+    const promises = splitedDatasets.map(files => this._makeImageNote(oauthToken, notebook, files));
     return Promise.all(promises);
   }
 
-  _makeImageNote(oauthToken, parentNotebook, file) {
+  _makeImageNote(oauthToken, parentNotebook, files) {
     //     - Make new media
     //     - Make new <en-media/> tag of the media
     //     - Make date string of the media
@@ -149,12 +149,12 @@ class EvernoteService {
     //     - Create new note
     return new Promise((resolve, reject) => {
       const noteStore = this.getNoteStore();
-      const date = moment(file.lastModified);
+      const date = moment(files[0].lastModified);
       const searchTitle = date.format('YYYY-MM-DD');
       const title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`;
       // - Search a note of today
       evernoteService.searchNotesWithTitle(noteStore, searchTitle).then(res => {
-        const { resource, hexHash } = this._makeResource(file);
+        const resourcesContainers = files.map(file => this._makeResource(file));
         // Create body
         const notes = res.notes;
         const timeString = date.format('HH:mm:ss');
@@ -167,8 +167,11 @@ class EvernoteService {
           // Already the note exists so update it
           const noteStore = this.getNoteStore();
           noteStore.getNoteContent(theNote.guid).then(content => {
+            // resourcesContainers.forEach((container))...
+            // In progress
             const media = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
-            const dom = this._makeNewDom(content, file.lastModified, media);
+            let dom = new JSDOM(content);
+            dom = this._makeNewDom(dom, file.lastModified, media);
             const newNote = this._makeUpdatedNote(theNote, dom.window.document.body.innerHTML, resource);
             noteStore.updateNote(newNote).then(resolve, reject);
           }, reject);
@@ -220,9 +223,7 @@ class EvernoteService {
     return nBody;
   }
 
-  _makeNewDom(content, lastModified, mediaENML) {
-    const date = moment(lastModified);
-    const dom = new JSDOM(content);
+  _makeNewDom(dom, lastModified, mediaENML) {
     const $times = dom.window.document.querySelectorAll('p[title="time"]');
     let hmsTimes = [];
     for (let i = 0, l = $times.length; i < l; i++) {
@@ -231,20 +232,9 @@ class EvernoteService {
     // 新しいエントリーを挿入すべきノート中の位置
     const index = dateService.getIndexOfInsertPosition(hmsTimes, lastModified);
     // 新しいノードを作る
-    const parentNode = dom.window.document.querySelector('en-note');
-    const newNode = dom.window.document.createElement('div');
-    const newTimeNode = dom.window.document.createElement('p');
-    const newMediaNode = dom.window.document.createElement('p');
-    const newBrNode = dom.window.document.createElement('br');
-    newNode.setAttribute('title', 'section');
-    newTimeNode.setAttribute('title', 'time');
-    newMediaNode.setAttribute('title', 'media');
-    newTimeNode.innerHTML = date.format('HH:mm:ss');
-    newMediaNode.innerHTML = mediaENML;
-    newNode.appendChild(newTimeNode);
-    newNode.appendChild(newMediaNode);
-    newNode.appendChild(newBrNode);
+    const newNode = this._makeNewNode(dom, lastModified, mediaENML);
     // ノードの挿入
+    const parentNode = dom.window.document.querySelector('en-note');
     if ($times[index]) {
       // 途中に挿入
       const targetNode = $times[index].parentNode;
@@ -254,6 +244,22 @@ class EvernoteService {
       parentNode.appendChild(newNode);
     }
     return dom;
+  }
+
+  _makeNewNode(dom, lastModified, mediaENML) {
+    const newNode = dom.window.document.createElement('div');
+    const newTimeNode = dom.window.document.createElement('p');
+    const newMediaNode = dom.window.document.createElement('p');
+    const newBrNode = dom.window.document.createElement('br');
+    newNode.setAttribute('title', 'section');
+    newTimeNode.setAttribute('title', 'time');
+    newMediaNode.setAttribute('title', 'media');
+    newTimeNode.innerHTML = moment(lastModified).format('HH:mm:ss');
+    newMediaNode.innerHTML = mediaENML;
+    newNode.appendChild(newTimeNode);
+    newNode.appendChild(newMediaNode);
+    newNode.appendChild(newBrNode);
+    return newNode;
   }
 
   _makeUpdatedNote(originalNote, bodyString, resource) {

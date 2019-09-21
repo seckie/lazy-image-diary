@@ -294,18 +294,22 @@ describe('evernote-service.js', () => {
     </div>
     </en-note>`;
     const mediaENML = `<en-media hash="hash2" type="mimestring" />`;
+    let initialDom;
+    beforeEach(() => {
+      initialDom = new JSDOM(content);
+    });
     it('return dom', () => {
-      const dom = evernoteService._makeNewDom(content, lastModified9AM, mediaENML);
+      const dom = evernoteService._makeNewDom(initialDom, lastModified9AM, mediaENML);
       expect(typeof dom.window).toBe('object');
     });
     it('has updated sections', () => {
-      const dom = evernoteService._makeNewDom(content, lastModified9AM, mediaENML);
+      const dom = evernoteService._makeNewDom(initialDom, lastModified9AM, mediaENML);
       const $sections = dom.window.document.querySelectorAll('[title="section"]');
       expect($sections.length).toBe(3);
     });
     describe('has updated "time" paragraph', () => {
       const getTimeElements = lastModified => {
-        const dom = evernoteService._makeNewDom(content, lastModified, mediaENML);
+        const dom = evernoteService._makeNewDom(initialDom, lastModified, mediaENML);
         return dom.window.document.querySelectorAll('[title="time"]');
       };
       it('9AM', () => {
@@ -326,6 +330,32 @@ describe('evernote-service.js', () => {
         expect($times[1].textContent).toBe(timeString11AM);
         expect($times[2].textContent).toBe(timeString3PM);
       });
+    });
+  });
+
+  describe('_makeNewNode', () => {
+    const CONTENT = '<div class="content"></div>';
+    const dom = new JSDOM(CONTENT);
+    const LAST_MODIFIED_6AM = '2019-04-01T06:00:00';
+    const MEDIA_ENML = `<en-media hash="hash2" type="mimestring"></en-media>`;
+    const newNode = evernoteService._makeNewNode(dom, LAST_MODIFIED_6AM, MEDIA_ENML);
+    it('returned Node that has title="section" attribute', () => {
+      expect(newNode.getAttribute('title')).toBe('section');
+    });
+    it('returned Node includes time node', () => {
+      const expected = '<p title="time">06:00:00</p>';
+      expect(newNode.querySelector('[title="time"]').outerHTML).toBe(expected);
+    });
+    it('returned Node includes media node', () => {
+      const expected = `<p title="media">${MEDIA_ENML}</p>`;
+      expect(newNode.querySelector('[title="media"]').outerHTML).toBe(expected);
+    });
+    it('returned Node includes media node', () => {
+      const expected = `<p title="media">${MEDIA_ENML}</p>`;
+      expect(newNode.querySelector('[title="media"]').outerHTML).toBe(expected);
+    });
+    it('returned Node includes br node', () => {
+      expect(newNode.querySelectorAll('br').length).toBe(1);
     });
   });
 
