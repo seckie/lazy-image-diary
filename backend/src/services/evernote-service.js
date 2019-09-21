@@ -40,7 +40,6 @@ class EvernoteService {
   }
   getAccessToken(req) {
     return new Promise((resolve, reject) => {
-      console.log(req.query.oauthToken);
       this.client.getAccessToken(
         req.query.oauthToken,
         req.query.oauthTokenSecret,
@@ -134,13 +133,11 @@ class EvernoteService {
     });
   }
 
-  createTodaysNoteWithImage(oauthToken, data) {
-    return new Promise((resolve, reject) => {
-      const noteStore = this.getNoteStore();
-      this.getDiaryNotebook().then(notebook => {
-        this._makeImageNote(oauthToken, notebook, data).then(resolve, reject);
-      });
-    });
+  async createImageNotes(oauthToken, dataset) {
+    const notebook = await this.getDiaryNotebook();
+    const splitedDatasets = dateService.splitDatasetByLastModified(dataset);
+    const promises = splitedDatasets.map(list => this._makeImageNote(oauthToken, notebook, list));
+    return Promise.all(promises);
   }
 
   _makeImageNote(oauthToken, parentNotebook, file) {

@@ -1,9 +1,7 @@
-const request = require('supertest');
-const dateService = require('../../src/server/services/date-service');
+const dateService = require('../../src/services/date-service');
 const moment = require('moment');
 
 describe('date-service.js', () => {
-  
   describe('getIndexOfInsertPosition()', () => {
     let suppressDeprecationWarningsDefault;
     beforeAll(() => {
@@ -70,15 +68,33 @@ describe('date-service.js', () => {
       expect(() => {
         dateService.makeHMSChangedNewMoment(m, 'foo');
       }).toThrow('"hms" argument must be valid "HH:mm:ss" format for moment.js');
-    })
+    });
     it('return moment.js object of the argument', () => {
-      const m = moment();
+      const m = moment('2019-09-01');
       expect(dateService.makeHMSChangedNewMoment(m, '10:05:01').format('HHmmss')).toBe('100501');
-      const m2 = moment();
+      const m2 = moment('2019-09-01');
       m2.hours(12);
       m2.minutes(24);
       m2.seconds(1);
       expect(dateService.makeHMSChangedNewMoment(m, '12:24:01').valueOf()).toBe(m2.valueOf());
-    })
+    });
+  });
+
+  describe('splitDatasetByLastModified()', () => {
+    const FILE1 = { lastModified: new Date('2019-09-01').getTime() };
+    const FILE2 = { lastModified: new Date('2019-09-01').getTime() };
+    const FILE3 = { lastModified: new Date('2019-09-02').getTime() };
+    const FILE4 = { lastModified: new Date('2019-09-03').getTime() };
+    const FILE5 = { lastModified: new Date('2019-09-07').getTime() };
+    const FILE6 = { lastModified: new Date('2019-09-03').getTime() };
+    const dataset = [FILE1, FILE2, FILE3, FILE4, FILE5, FILE6];
+    it('return splited array of dataset', () => {
+      expect(dateService.splitDatasetByLastModified(dataset)).toEqual([
+        [FILE1, FILE2],
+        [FILE3],
+        [FILE4, FILE6],
+        [FILE5]
+      ]);
+    });
   });
 });

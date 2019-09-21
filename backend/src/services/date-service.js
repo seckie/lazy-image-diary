@@ -1,6 +1,7 @@
 'use strict';
 const moment = require('moment');
 const _ = require('lodash');
+const { groupBy } = require('lodash');
 
 const dateService = {
   getIndexOfInsertPosition(hmsTimes, momentValue) {
@@ -32,6 +33,13 @@ const dateService = {
     m.minutes(hmsArray[1]);
     m.seconds(hmsArray[2]);
     return m;
+  },
+
+  splitDatasetByLastModified(dataset) {
+    const groupObj = _.groupBy(dataset, d => d.lastModified);
+    const groups = _.values(groupObj);
+    groups.sort((group1, group2) => group1[0].lastModified - group2[0].lastModified);
+    return groups;
   }
 };
 
