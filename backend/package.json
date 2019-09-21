@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "test": "jest --watch"
+    "test": "jest --watch",
+    "fmt": "prettier --write"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -27,6 +28,7 @@
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "jest": "^23.6.0",
+    "prettier": "^1.18.2",
     "superagent": "^4.1.0",
     "supertest": "^3.4.2"
   }
