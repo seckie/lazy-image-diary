@@ -201,9 +201,10 @@ describe('Sagas', () => {
 
     it('put UPLOAD_COMPLETE with payload', async () => {
       await runSaga(sagaIO, uploadFilesFromField, action).toPromise();
-      const FILES_COMPLETED = [
-        { ...FILES[1], status: UPLOAD_STATUS.complete }
-      ];
+      const FILES_COMPLETED = FILES.map(f => {
+        return { ...f, status: UPLOAD_STATUS.complete };
+      });
+
       const expected = {
         type: UPLOAD_COMPLETE,
         payload: { fileDataset: FILES_COMPLETED }

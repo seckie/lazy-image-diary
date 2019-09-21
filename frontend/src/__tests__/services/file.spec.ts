@@ -18,9 +18,18 @@ describe('file service', () => {
     [ { fileContents: 'foo' } as any ],
     { type: 'text/plain' }
   );
+  const blob2 = new Blob(
+    [ { fileContents: 'bar' } as any ],
+    { type: 'text/plain' }
+  );
   const FILE_NAME = 'name';
+  const FILE_NAME2 = 'name2';
   const lastModifiedTimestamp = (new Date('2019-09-01')).getTime();
+  const lastModifiedTimestamp2 = (new Date('2019-09-02')).getTime();
   const file = new File([blob], FILE_NAME, {
+    lastModified: lastModifiedTimestamp
+  });
+  const file2 = new File([blob], FILE_NAME2, {
     lastModified: lastModifiedTimestamp
   });
   const TOKEN = 'token';
@@ -75,7 +84,12 @@ describe('file service', () => {
   describe('uploadFile()', () => {
     const formData = new FormData();
     formData.append('fileData', file);
-    formData.append('fileLastModified', lastModifiedTimestamp.toString());
+    formData.append('fileData', file2);
+    const lastModified = [
+      lastModifiedTimestamp.toString(),
+      lastModifiedTimestamp2.toString()
+    ];
+    formData.append('fileLastModified', JSON.stringify(lastModified));
     const opt: AxiosRequestConfig = {
       method: 'post',
       url: API_CREATE_IMAGE_NOTE_URL,
@@ -87,19 +101,21 @@ describe('file service', () => {
     };
     let res: any;
     it('return Promise', () => {
-      res = uploadFile(file, TOKEN);
+      res = uploadFile([file, file2], TOKEN);
       expect(res instanceof Promise).toBe(true);
     });
     it('call axios with the POST args', () => {
-      res = uploadFile(file, TOKEN);
-      expect(axios).toBeCalledWith(opt)
+      res = uploadFile([file, file2], TOKEN);
+      expect(axios).toBeCalledWith(
+        expect.objectContaining(opt)
+      );
     });
     it('return resolved axios response', async () => {
-      res = await uploadFile(file, TOKEN);
+      res = await uploadFile([file, file2], TOKEN);
       expect(res).toBe('resolved');
     });
     it('return rejected axios response', async () => {
-      await uploadFile(file, '').catch((e) => {
+      await uploadFile([file, file2], '').catch((e) => {
         expect(e).toBe('rejected');
       })
     });

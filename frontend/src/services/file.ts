@@ -24,10 +24,12 @@ export function uploadFile (files: File[], token: string) {
     // const date = moment(file.lastModified);
     // const searchTitle = date.format('YYYY-MM-DD');
     const formData = new FormData();
+    const lastModified = [];
     for (let file of files) {
       formData.append('fileData', file);
-      formData.append('fileLastModified', file.lastModified.toString());
+      lastModified.push(file.lastModified.toString());
     }
+    formData.append('fileLastModified', JSON.stringify(lastModified));
     const options: AxiosRequestConfig = {
       method: 'post',
       url: API_CREATE_IMAGE_NOTE_URL,
