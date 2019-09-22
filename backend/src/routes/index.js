@@ -4,6 +4,7 @@ const createError = require('http-errors');
 const evernoteService = require('../services/evernote-service.js');
 const isAuthenticated = require('../middlewares/isAuthenticated');
 const { MAX_FILE_SIZE, CALLBACK_URL } = require('../config/app-config');
+const { MAX_UPLOAD_FILE_COUNT } = require('../../../config.json');
 
 const multer = require('multer');
 const storage = multer.memoryStorage(); // Don't use disk storage
@@ -13,7 +14,7 @@ const upload = multer({
   limits: {
     fileSize: MAX_FILE_SIZE
   }
-}).array('fileData', 2);
+}).array('fileData', MAX_UPLOAD_FILE_COUNT);
 
 router.get('/oauth_signin', (req, res) => {
   const callbackUrl = req.query.callback_url || CALLBACK_URL;
