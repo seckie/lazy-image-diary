@@ -75,6 +75,9 @@ class EvernoteService {
   }
 
   getNoteStore() {
+    if (!this.authenticatedClient) {
+      throw new Error('You have to login');
+    }
     if (!this.noteStore) {
       this.noteStore = this.authenticatedClient.getNoteStore();
     }
@@ -154,7 +157,8 @@ class EvernoteService {
       const title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`;
       // - Search a note of today
       evernoteService.searchNotesWithTitle(noteStore, searchTitle).then(res => {
-        const resourcesContainers = files.map(file => this._makeResource(file));
+        const resourceContainers = files.map(file => this._makeResource(file));
+        const resources = resourceContainers.map(container => container.resource);
         // Create body
         const notes = res.notes;
         const timeString = date.format('HH:mm:ss');
@@ -167,8 +171,7 @@ class EvernoteService {
           // Already the note exists so update it
           const noteStore = this.getNoteStore();
           noteStore.getNoteContent(theNote.guid).then(content => {
-            const resources = resourcesContainers.map(container => container.resource);
-            const updatedDom = resourcesContainers.reduce((dom, container, i) => {
+            const updatedDom = resourceContainers.reduce((dom, container, i) => {
               const { resource, hexHash } = container;
               const media = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
               return this._makeNewDom(dom, file[i].lastModified, media);
@@ -179,10 +182,10 @@ class EvernoteService {
         } else {
           // Make new note
           const ourNote = new Evernote.Types.Note();
-          const nBody = this._makeNewEntryBodyString(resource, hexHash, timeString);
+          const nBody = this._makeNewEntryBodyString(resourceContainers, timeString);
           ourNote.title = title;
           ourNote.content = nBody;
-          ourNote.resources = [resource];
+          ourNote.resources = resources;
           if (parentNotebook && parentNotebook.guid) {
             ourNote.notebookGuid = parentNotebook.guid;
           }
@@ -211,16 +214,19 @@ class EvernoteService {
     return { resource, hexHash };
   }
 
-  _makeNewEntryBodyString(resource, hexHash, timeString) {
-    const nBody = `<?xml version="1.0" encoding="UTF-8"?>
+  _makeNewEntryBodyString(resourceContainers, timeString) {
+    let nBody = `<?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-    <en-note>
-    <div title="section">
-    <p title="time">${timeString}</p>
-    <p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>
-    <br />
-    </div>
-    </en-note>`;
+    <en-note>`;
+    resourceContainers.forEach(container => {
+      const { resource, hexHash } = container;
+      nBody += `<div title="section">
+        <p title="time">${timeString}</p>
+        <p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>
+        <br />
+        </div>`;
+    });
+    nBody += `</en-note>`;
     return nBody;
   }
 

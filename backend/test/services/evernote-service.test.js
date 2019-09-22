@@ -253,21 +253,26 @@ describe('evernote-service.js', () => {
   });
 
   describe('_makeNewEntryBodyString', () => {
-    const resource = { mime: 'abc' };
-    const hexHash = 'abc';
+    const RESOURCE = { mime: 'abc' };
+    const HEX_HASH = 'abc';
+    const resourceContainer = {
+      resource: RESOURCE,
+      hexHash: HEX_HASH
+    };
+    const containers = [resourceContainer];
     const timeString = '2019-04-01';
     it('return string', () => {
-      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      const result = evernoteService._makeNewEntryBodyString(containers, timeString);
       expect(typeof result).toBe('string');
     });
     it('include "title" element', () => {
-      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      const result = evernoteService._makeNewEntryBodyString(containers, timeString);
       expect(new RegExp(`<p title="time">${timeString}</p>`).test(result)).toBe(true);
     });
     it('include "media" element', () => {
-      const result = evernoteService._makeNewEntryBodyString(resource, hexHash, timeString);
+      const result = evernoteService._makeNewEntryBodyString(containers, timeString);
       expect(
-        new RegExp(`<p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>`).test(result)
+        new RegExp(`<p title="media"><en-media hash="${HEX_HASH}" type="${RESOURCE.mime}" /></p>`).test(result)
       ).toBe(true);
     });
   });
