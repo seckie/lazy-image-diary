@@ -373,22 +373,22 @@ describe('evernote-service.js', () => {
     it('return mixed Note object', () => {
       const bodyContent = 'body';
       const body = `<p title="body">${bodyContent}</p>`;
-      const resource = { id: 2 };
-      const result = evernoteService._makeUpdatedNote(originalNote, body, resource);
+      const resources = [{ id: 2 }];
+      const result = evernoteService._makeUpdatedNote(originalNote, body, resources);
       expect(result.title).toBe(TITLE);
       expect(new RegExp(body).test(result.content)).toBe(true);
       expect(result.resources[0]).toEqual(RESOURCE);
-      expect(result.resources[1]).toEqual(resource);
+      expect(result.resources[1]).toEqual(resources[0]);
       expect(result.guid).toEqual(GUID);
     });
     it("if originalNote doesn't have any resource, new note would have just one resource", () => {
       const body = 'body';
-      const resource = { id: 2 };
+      const resources = [{ id: 2 }];
       const tempResource = originalNote.resources;
       originalNote.resources = undefined;
-      const result = evernoteService._makeUpdatedNote(originalNote, body, resource);
-      expect(result.resources[0]).toEqual(resource);
-      originalNote.resource = tempResource;
+      const result = evernoteService._makeUpdatedNote(originalNote, body, resources);
+      expect(result.resources).toEqual(resources);
+      originalNote.resources = tempResource;
     });
   });
 

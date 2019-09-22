@@ -167,12 +167,13 @@ class EvernoteService {
           // Already the note exists so update it
           const noteStore = this.getNoteStore();
           noteStore.getNoteContent(theNote.guid).then(content => {
-            // resourcesContainers.forEach((container))...
-            // In progress
-            const media = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
-            let dom = new JSDOM(content);
-            dom = this._makeNewDom(dom, file.lastModified, media);
-            const newNote = this._makeUpdatedNote(theNote, dom.window.document.body.innerHTML, resource);
+            const resources = resourcesContainers.map(container => container.resource);
+            const updatedDom = resourcesContainers.reduce((dom, container, i) => {
+              const { resource, hexHash } = container;
+              const media = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
+              return this._makeNewDom(dom, file[i].lastModified, media);
+            }, new JSDOM(content));
+            const newNote = this._makeUpdatedNote(theNote, updatedDom.window.document.body.innerHTML, resources);
             noteStore.updateNote(newNote).then(resolve, reject);
           }, reject);
         } else {
@@ -262,7 +263,7 @@ class EvernoteService {
     return newNode;
   }
 
-  _makeUpdatedNote(originalNote, bodyString, resource) {
+  _makeUpdatedNote(originalNote, bodyString, resources) {
     // update content
     let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
     nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
@@ -274,7 +275,7 @@ class EvernoteService {
     newNote.title = originalNote.title;
     newNote.content = nBody;
     newNote.resources =
-      originalNote.resources && originalNote.resources.length ? originalNote.resources.concat(resource) : [resource];
+      originalNote.resources && originalNote.resources.length ? originalNote.resources.concat(resources) : resources;
     newNote.guid = originalNote.guid;
     return newNote;
   }
