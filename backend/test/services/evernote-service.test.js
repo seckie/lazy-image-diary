@@ -257,20 +257,21 @@ describe('evernote-service.js', () => {
     const HEX_HASH = 'abc';
     const resourceContainer = {
       resource: RESOURCE,
-      hexHash: HEX_HASH
+      hexHash: HEX_HASH,
+      lastModified: new Date('2019-09-01T10:00:00').getTime()
     };
     const containers = [resourceContainer];
-    const timeString = '2019-04-01';
+    const TIME_STRING = '10:00:00';
     it('return string', () => {
-      const result = evernoteService._makeNewEntryBodyString(containers, timeString);
+      const result = evernoteService._makeNewEntryBodyString(containers);
       expect(typeof result).toBe('string');
     });
     it('include "title" element', () => {
-      const result = evernoteService._makeNewEntryBodyString(containers, timeString);
-      expect(new RegExp(`<p title="time">${timeString}</p>`).test(result)).toBe(true);
+      const result = evernoteService._makeNewEntryBodyString(containers);
+      expect(new RegExp(`<p title="time">${TIME_STRING}</p>`).test(result)).toBe(true);
     });
     it('include "media" element', () => {
-      const result = evernoteService._makeNewEntryBodyString(containers, timeString);
+      const result = evernoteService._makeNewEntryBodyString(containers);
       expect(
         new RegExp(`<p title="media"><en-media hash="${HEX_HASH}" type="${RESOURCE.mime}" /></p>`).test(result)
       ).toBe(true);

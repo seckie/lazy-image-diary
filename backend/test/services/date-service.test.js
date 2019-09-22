@@ -81,12 +81,12 @@ describe('date-service.js', () => {
   });
 
   describe('splitDatasetByLastModified()', () => {
-    const FILE1 = { lastModified: new Date('2019-09-01').getTime() };
-    const FILE2 = { lastModified: new Date('2019-09-01').getTime() };
+    const FILE1 = { lastModified: new Date('2019-09-01T10:00:00').getTime() };
+    const FILE2 = { lastModified: new Date('2019-09-01T11:00:00').getTime() };
     const FILE3 = { lastModified: new Date('2019-09-02').getTime() };
-    const FILE4 = { lastModified: new Date('2019-09-03').getTime() };
+    const FILE4 = { lastModified: new Date('2019-09-03T08:00:00').getTime() };
     const FILE5 = { lastModified: new Date('2019-09-07').getTime() };
-    const FILE6 = { lastModified: new Date('2019-09-03').getTime() };
+    const FILE6 = { lastModified: new Date('2019-09-03T14:00:00').getTime() };
     const dataset = [FILE1, FILE2, FILE3, FILE4, FILE5, FILE6];
     it('return splited array of dataset', () => {
       expect(dateService.splitDatasetByLastModified(dataset)).toEqual([

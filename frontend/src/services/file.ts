@@ -1,11 +1,11 @@
-import axios, { AxiosRequestConfig } from 'axios';
-import { UPLOAD_STATUS } from '../constants/';
-import { API_CREATE_IMAGE_NOTE_URL } from '../constants';
+import axios, { AxiosRequestConfig } from "axios";
+import { UPLOAD_STATUS } from "../constants/";
+import { API_CREATE_IMAGE_NOTE_URL } from "../constants";
 
 export function readFile(file: File) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = function (e: any) {
+    reader.onload = function(e: any) {
       resolve({
         file: file,
         path: e.target.result,
@@ -16,27 +16,22 @@ export function readFile(file: File) {
   });
 }
 
-export function uploadFile (files: File[], token: string) {
+export function uploadFile(files: File[], token: string) {
   return new Promise((resolve, reject) => {
-
-    // TODO:
-    // 日付ごとに分割してリクエストする
-    // const date = moment(file.lastModified);
-    // const searchTitle = date.format('YYYY-MM-DD');
     const formData = new FormData();
     const lastModified = [];
     for (let file of files) {
-      formData.append('fileData', file);
+      formData.append("fileData", file);
       lastModified.push(file.lastModified.toString());
     }
-    formData.append('fileLastModified', JSON.stringify(lastModified));
+    formData.append("fileLastModified", JSON.stringify(lastModified));
     const options: AxiosRequestConfig = {
-      method: 'post',
+      method: "post",
       url: API_CREATE_IMAGE_NOTE_URL,
       data: formData,
       headers: {
-        'Content-Type': 'multipart/form-data',
-        'authorization': token
+        "Content-Type": "multipart/form-data",
+        authorization: token
       }
     };
     axios(options).then(resolve, reject);

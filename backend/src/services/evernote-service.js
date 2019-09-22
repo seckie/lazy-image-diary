@@ -161,7 +161,6 @@ class EvernoteService {
         const resources = resourceContainers.map(container => container.resource);
         // Create body
         const notes = res.notes;
-        const timeString = date.format('HH:mm:ss');
         // - If the note was found
         let theNote;
         if (notes && notes[0]) {
@@ -174,7 +173,7 @@ class EvernoteService {
             const updatedDom = resourceContainers.reduce((dom, container, i) => {
               const { resource, hexHash } = container;
               const media = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
-              return this._makeNewDom(dom, file[i].lastModified, media);
+              return this._makeNewDom(dom, files[i].lastModified, media);
             }, new JSDOM(content));
             const newNote = this._makeUpdatedNote(theNote, updatedDom.window.document.body.innerHTML, resources);
             noteStore.updateNote(newNote).then(resolve, reject);
@@ -182,7 +181,7 @@ class EvernoteService {
         } else {
           // Make new note
           const ourNote = new Evernote.Types.Note();
-          const nBody = this._makeNewEntryBodyString(resourceContainers, timeString);
+          const nBody = this._makeNewEntryBodyString(resourceContainers);
           ourNote.title = title;
           ourNote.content = nBody;
           ourNote.resources = resources;
@@ -211,17 +210,22 @@ class EvernoteService {
     attr.fileName = file.originalname;
     resource.attributes = attr;
 
-    return { resource, hexHash };
+    return {
+      resource,
+      hexHash,
+      lastModified: file.lastModified
+    };
   }
 
-  _makeNewEntryBodyString(resourceContainers, timeString) {
+  _makeNewEntryBodyString(resourceContainers) {
     let nBody = `<?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
     <en-note>`;
     resourceContainers.forEach(container => {
-      const { resource, hexHash } = container;
+      const { resource, hexHash, lastModified } = container;
+      const time = moment(lastModified).format('HH:mm:ss');
       nBody += `<div title="section">
-        <p title="time">${timeString}</p>
+        <p title="time">${time}</p>
         <p title="media"><en-media hash="${hexHash}" type="${resource.mime}" /></p>
         <br />
         </div>`;
