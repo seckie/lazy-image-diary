@@ -4,8 +4,7 @@ import { Dispatch } from "redux";
 import classNames from "classnames";
 
 import actions from "../actions/";
-import { IFileData } from "../reducers/";
-import { UPLOAD_STATUS } from "../constants/";
+import { IFileData } from "../models/";
 
 export function mapStateToProps(state: any) {
   return state;
@@ -13,7 +12,9 @@ export function mapStateToProps(state: any) {
 
 export function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    onChange: (e: React.FormEvent) => dispatch(actions.fileFieldOnChange(e))
+    onChange: (e: React.FormEvent) => dispatch(actions.fileFieldOnChange(e)),
+    onSubmit: (fileDataset: IFileData[]) =>
+      dispatch(actions.uploadFiles(fileDataset))
   };
 }
 
@@ -24,10 +25,13 @@ interface IUser {
 }
 
 interface IProps {
+  uploadedFileDataset: IFileData[];
   fileDataset: IFileData[];
   resultMessages: string[];
   errorMessages: string[];
-  onChange: () => void;
+  isUploading: boolean;
+  onChange: (e: React.FormEvent) => void;
+  onSubmit: (fileDataest: IFileData[]) => void;
 }
 
 export const CreateDiary: React.FC<IProps> = props => {
@@ -69,7 +73,15 @@ export const CreateDiary: React.FC<IProps> = props => {
       </div>
       <div className="uploadUI2">
         <p className="uploadInput">
-          <button className="btn">アップロード</button>
+          <button
+            className="btn"
+            disabled={props.isUploading}
+            onClick={() => {
+              props.onSubmit(props.fileDataset);
+            }}
+          >
+            アップロード
+          </button>
         </p>
         <ul className="messages">
           {props.resultMessages.map(message => {
@@ -94,7 +106,7 @@ export const CreateDiary: React.FC<IProps> = props => {
           {props.fileDataset.map((data: IFileData, i: number) => {
             const mediaCName = classNames({
               media: true,
-              "media--uploading": data.status === UPLOAD_STATUS.uploading
+              media____uploading: props.isUploading
             });
             return (
               <li className={mediaCName} key={`media${i}`}>
@@ -109,6 +121,25 @@ export const CreateDiary: React.FC<IProps> = props => {
           })}
         </ul>
       </div>
+      {props.uploadedFileDataset && props.uploadedFileDataset[0] && (
+        <div className="mediaList mediaList____done">
+          <h2 className="mediaList__h">アップロード済み</h2>
+          <ul className="medias">
+            {props.uploadedFileDataset.map((data: IFileData, i: number) => {
+              return (
+                <li className="media" key={`media${i}`}>
+                  <img
+                    className="thumb"
+                    src={data.path}
+                    title={global.escape(data.file.name)}
+                    alt={global.escape(data.file.name)}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

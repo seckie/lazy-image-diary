@@ -2,7 +2,13 @@ jest.mock("../../services/api");
 jest.mock("../../services/file");
 import { runSaga } from "redux-saga";
 import { takeEvery } from "redux-saga/effects";
-import { signIn, oauthCallback, uploadFilesFromField } from "../../sagas";
+import {
+  signIn,
+  oauthCallback,
+  readFilesFromField,
+  uploadFilesFromField,
+  uploadFilesSaga
+} from "../../sagas";
 import rootSaga from "../../sagas";
 import { apiSignIn, apiOAuthCallback } from "../../services/api";
 import { readFile, uploadFile } from "../../services/file";
@@ -15,7 +21,8 @@ import {
   UPLOAD_STATUS,
   SIGN_IN,
   OAUTH_CALLBACK,
-  FILE_FIELD_ON_CHANGE
+  FILE_FIELD_ON_CHANGE,
+  UPLOAD_START
 } from "../../constants";
 
 describe("Sagas", () => {
@@ -30,7 +37,11 @@ describe("Sagas", () => {
       expect(saga.next().value).toEqual(expected);
     });
     it("3rd yield value takes FILE_FIELD_ON_CHANGE action", () => {
-      const expected = takeEvery(FILE_FIELD_ON_CHANGE, uploadFilesFromField);
+      const expected = takeEvery(FILE_FIELD_ON_CHANGE, readFilesFromField);
+      expect(saga.next().value).toEqual(expected);
+    });
+    it("4th yield value takes UPLOAD_START action", () => {
+      const expected = takeEvery(UPLOAD_START, uploadFiles);
       expect(saga.next().value).toEqual(expected);
     });
   });

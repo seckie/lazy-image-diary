@@ -3,9 +3,10 @@ import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
   FILE_READ,
-  UPLOAD_COMPLETE,
-  UPLOAD_STATUS
+  UPLOAD_STARTED,
+  UPLOAD_COMPLETE
 } from "../constants/";
+import { IFileData } from "../models/";
 
 export interface ISignInResponse {
   authorizeUrl?: string;
@@ -18,17 +19,12 @@ export interface IOAuthCallbackResponse {
   user?: object;
 }
 
-export interface IFileDataset {
-  fileDataset?: IFileData[];
-  uploadedFileDataset?: IFileData[];
-}
-export interface IFileData {
-  file: File;
-  path: string;
-  status: UPLOAD_STATUS;
-}
-
-export type IState = ISignInResponse & IOAuthCallbackResponse & IFileDataset;
+export type IState = ISignInResponse &
+  IOAuthCallbackResponse & {
+    isUploading?: boolean;
+    fileDataset?: IFileData[];
+    uploadedFileDataset?: IFileData[];
+  };
 
 export const initialState: IState = {
   accessToken: "",
@@ -36,6 +32,7 @@ export const initialState: IState = {
   authorizeUrl: "",
   oauthToken: "",
   oauthTokenSecret: "",
+  isUploading: false,
   fileDataset: [],
   uploadedFileDataset: []
 };
@@ -81,9 +78,15 @@ export default function rootReducer(state = initialState, action: IAction) {
           state.fileDataset!
         )
       };
-    case UPLOAD_COMPLETE:
+    case UPLOAD_STARTED:
       return {
         ...state,
+        isUploading: true
+      };
+    case UPLOAD_COMPLETE:
+      const newState = {
+        ...state,
+        isUploading: false,
         //fileDataset: unionWith(action.payload.fileDataset!, state.fileDataset!, unionComparator)
         fileDataset: state.fileDataset!.filter(file => {
           const isIncludedInAction: boolean = action.payload.uploadedFileDataset!.some(
@@ -95,6 +98,7 @@ export default function rootReducer(state = initialState, action: IAction) {
           state.uploadedFileDataset!
         )
       };
+      return newState;
     default:
       return state;
   }

@@ -89,6 +89,11 @@ a {
   text-align: center;
   cursor: pointer;
 }
+.btn:disabled {
+  background-color: #f3f3f3;
+  color: #ccc;
+  cursor: default;
+}
 
 /*
  * Input
@@ -133,9 +138,13 @@ a {
 .mediaList {
   width: 100%;
 }
+.mediaList__h {
+  margin: 24px 0 0;
+  padding: 0;
+}
 .medias {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
   max-width: 1004px;
@@ -149,28 +158,31 @@ a {
   justify-content: center;
   list-style: none;
   position: relative;
-  width: 185px;
-  height: 185px;
-  margin: 0 0 17px;
+  overflow: hidden;
+  width: 186px;
+  height: 186px;
+  margin: 0 18px 17px 0;
   padding: 0;
   box-sizing: border-box;
   border: 1px solid #bbb;
   background-color: #eee;
 }
+.media:nth-of-type(5n) {
+  margin-right: 0;
+}
 .media img {
-  max-width: 183px;
-  max-height: 183px;
+  max-width: 184px;
   width: 100%;
 }
 
-.media.media--uploading img {
+.media.media____uploading img {
   opacity: 0.5;
 }
 
-.media.media--error {
+.media.media____error {
   border-color: #f99;
 }
 
-.media.media--error img {
+.media.media____error img {
   opacity: 0.5;
 }
