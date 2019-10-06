@@ -1,4 +1,3 @@
-import { unionWith } from "lodash";
 import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
@@ -42,10 +41,6 @@ export interface IAction {
   payload: IState;
 }
 
-export function unionComparator(newData: IFileData, baseData: IFileData) {
-  return newData.path === baseData.path;
-}
-
 export default function rootReducer(state = initialState, action: IAction) {
   switch (action.type) {
     case SIGN_IN_SUCCESS:
@@ -87,7 +82,6 @@ export default function rootReducer(state = initialState, action: IAction) {
       const newState = {
         ...state,
         isUploading: false,
-        //fileDataset: unionWith(action.payload.fileDataset!, state.fileDataset!, unionComparator)
         fileDataset: state.fileDataset!.filter(file => {
           const isIncludedInAction: boolean = action.payload.uploadedFileDataset!.some(
             uploadedFile => file.path === uploadedFile.path

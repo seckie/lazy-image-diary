@@ -1,21 +1,12 @@
 import reducer from "../../reducers";
-import { initialState, unionComparator } from "../../reducers";
+import { initialState } from "../../reducers";
 import {
   SIGN_IN_SUCCESS,
   OAUTH_CALLBACK_SUCCESS,
   FILE_READ,
+  UPLOAD_STARTED,
   UPLOAD_COMPLETE
 } from "../../constants";
-
-describe("utility function", () => {
-  it("unionComparator", () => {
-    const D1: any = { path: "path1", status: "complete" };
-    const D2: any = { path: "path2", status: "uploading" };
-    const D2_2: any = { path: "path2", status: "complete" };
-    expect(unionComparator(D1, D2)).toBe(false);
-    expect(unionComparator(D2, D2_2)).toBe(true);
-  });
-});
 
 describe("reducer", () => {
   describe("SIGN_IN_SUCCESS action type", () => {
@@ -141,6 +132,28 @@ describe("reducer", () => {
       const expected = {
         ...state,
         fileDataset: FILE_DATASET.concat(INITIAL_FILE_DATASET)
+      };
+      expect(res).toEqual(expected);
+    });
+  });
+
+  describe("UPLOAD_STARTED action type", () => {
+    const action = {
+      type: UPLOAD_STARTED,
+      payload: {}
+    };
+    const state = {
+      ...initialState,
+      isUploading: false
+    };
+    let res: any;
+    beforeAll(() => {
+      res = reducer(state, action);
+    });
+    it('return new state that has "isUploading: true"', () => {
+      const expected = {
+        ...state,
+        isUploading: true
       };
       expect(res).toEqual(expected);
     });
