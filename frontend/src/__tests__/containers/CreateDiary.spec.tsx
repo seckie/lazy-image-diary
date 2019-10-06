@@ -1,38 +1,67 @@
-import * as React from 'react';
-import { shallow } from 'enzyme';
-import { CreateDiary, mapStateToProps, mapDispatchToProps } from '../../containers/CreateDiary';
-import actions from '../../actions';
-import { UPLOAD_STATUS } from '../../constants';
+import * as React from "react";
+import { shallow } from "enzyme";
+import {
+  CreateDiary,
+  mapStateToProps,
+  mapDispatchToProps
+} from "../../containers/CreateDiary";
+import actions from "../../actions";
 
-describe('CreateDiary', () => {
-  describe('mapStateToProps', () => {
+describe("CreateDiary", () => {
+  describe("mapStateToProps", () => {
     const state = {
-      test: 'test'
+      test: "test"
     };
-    it('just return state without mutation', () => {
+    it("just return state without mutation", () => {
       expect(mapStateToProps(state)).toEqual(state);
     });
   });
-  describe('mapDispatchToProps', () => {
-    const dispatch = jest.fn();
-    const props = mapDispatchToProps(dispatch);
-    const RES = 'sign in response';
-    const spy = jest.spyOn(actions, 'fileFieldOnChange').mockImplementation((): any => RES);
-    it('onChange() method calls dispatched fileFieldOnChange()', () => {
+  describe("mapDispatchToProps", () => {
+    it("onChange() method calls dispatched fileFieldOnChange()", () => {
+      const dispatch = jest.fn();
+      const props = mapDispatchToProps(dispatch);
+      const RES = "sign in response";
+      const actionSpy = jest
+        .spyOn(actions, "fileFieldOnChange")
+        .mockImplementation((): any => RES);
       const ev: any = {};
       props.onChange(ev);
-      expect(spy).toBeCalled();
+      expect(actionSpy).toBeCalled();
+      expect(dispatch).toBeCalledWith(RES);
+    });
+    it("onSubmit() method calls dispatched uploadFiles()", () => {
+      const dispatch = jest.fn();
+      const props = mapDispatchToProps(dispatch);
+      const DATASET: any = ["data1", "data2"];
+      const RES: any = "uploadFiles response";
+      const actionSpy = jest
+        .spyOn(actions, "uploadFiles")
+        .mockImplementation((): any => RES);
+      props.onSubmit(DATASET);
+      expect(actionSpy).toBeCalledWith(DATASET);
       expect(dispatch).toBeCalledWith(RES);
     });
   });
-  describe('render', () => {
+  describe("render", () => {
+    const USER_NAME = "name";
+    const FILE1 = {
+      file: { name: "file1" },
+      path: "path1"
+    };
+    const FILE2 = {
+      file: { name: "file2&()\\" },
+      path: "path2"
+    };
     const props: any = {
+      user: {
+        name: USER_NAME
+      },
       fileDataset: [],
       onChange: jest.fn()
     };
-    it('display user.name', () => {
+    it("display user.name", () => {
       const el = shallow(<CreateDiary {...props} />);
-      expect(el.find('p').at(0).text()).toBe('Evernote User Name: User A');
+      expect(el.find(".userInfo").text()).toBe(`Evernote ID: ${USER_NAME}`);
     });
     it('set onChange to input[type="file"]', () => {
       const localProps = {
@@ -40,42 +69,209 @@ describe('CreateDiary', () => {
         onChange: jest.fn()
       };
       const el = shallow(<CreateDiary {...localProps} />);
-      el.find('input[type="file"]').simulate('change');
+      el.find('input[type="file"]').simulate("change");
       expect(localProps.onChange).toBeCalled();
     });
-    describe('display media blocks with fileDataset prop', () => {
-      const DATA1 = {
-        file: { name: 'file1' },
-        status: UPLOAD_STATUS.complete,
-        path: 'path1'
-      };
-      const DATA2 = {
-        file: { name: 'file2&()\\' },
-        status: UPLOAD_STATUS.uploading,
-        path: 'path2'
-      };
-      const localProps: any = {
-        props,
-        fileDataset: [ DATA1, DATA2 ]
+    it("set onSubmit to the button", () => {
+      const localProps = {
+        ...props,
+        onSubmit: jest.fn()
       };
       const el = shallow(<CreateDiary {...localProps} />);
-      const medias = el.find('.media');
-      it('media has "media--uploading" className during uploading', () => {
-        const CNAME = 'media--uploading';
-        expect(medias.at(0).hasClass(CNAME)).toBe(false);
-        expect(medias.at(1).hasClass(CNAME)).toBe(true);
+      el.find(".uploadInput button").simulate("click");
+      expect(localProps.onSubmit).toBeCalled();
+    });
+
+    describe("isUploading props", () => {
+      const localProps: any = {
+        ...props,
+        isUploading: true,
+        fileDataset: [FILE1, FILE2]
+      };
+      const el = shallow(<CreateDiary {...localProps} />);
+      it('All medias in "mediaList____undone" container have "media____uploading" className', () => {
+        const medias = el.find(".mediaList____undone .media");
+        expect(medias.at(0).hasClass("media____uploading")).toBe(true);
+        expect(medias.at(1).hasClass("media____uploading")).toBe(true);
       });
-      it('IMG src attribute should be data.path', () => {
-        expect(medias.at(0).find('img').prop('src')).toBe(DATA1.path);
-        expect(medias.at(1).find('img').prop('src')).toBe(DATA2.path);
+      it("Upload button should be disabled", () => {
+        expect(el.find(".uploadInput button").prop("disabled")).toBe(true);
       });
-      it('IMG title attribute should be escaped data.file.name', () => {
-        expect(medias.at(0).find('img').prop('title')).toBe(escape(DATA1.file.name));
-        expect(medias.at(1).find('img').prop('title')).toBe(escape(DATA2.file.name));
+    });
+
+    describe("fileDataset props", () => {
+      it("IMG attributes should use each data", () => {
+        const localProps: any = {
+          ...props,
+          fileDataset: [FILE1, FILE2]
+        };
+        const el = shallow(<CreateDiary {...localProps} />);
+        const medias = el.find(".mediaList____undone .media");
+        expect(
+          medias
+            .at(0)
+            .find("img")
+            .prop("src")
+        ).toBe(FILE1.path);
+        expect(
+          medias
+            .at(1)
+            .find("img")
+            .prop("src")
+        ).toBe(FILE2.path);
+        expect(
+          medias
+            .at(0)
+            .find("img")
+            .prop("title")
+        ).toBe(escape(FILE1.file.name));
+        expect(
+          medias
+            .at(1)
+            .find("img")
+            .prop("title")
+        ).toBe(escape(FILE2.file.name));
+        expect(
+          medias
+            .at(0)
+            .find("img")
+            .prop("alt")
+        ).toBe(escape(FILE1.file.name));
+        expect(
+          medias
+            .at(1)
+            .find("img")
+            .prop("alt")
+        ).toBe(escape(FILE2.file.name));
       });
-      it('IMG alt attribute should be escaped data.file.name', () => {
-        expect(medias.at(0).find('img').prop('alt')).toBe(escape(DATA1.file.name));
-        expect(medias.at(1).find('img').prop('alt')).toBe(escape(DATA2.file.name));
+      it("Display empty list if fileDataset props is undefined", () => {
+        const localProps = {
+          ...props,
+          fileDataset: undefined
+        };
+        const el = shallow(<CreateDiary {...localProps} />);
+        expect(el.find(".media____empty").length).toBe(5);
+      });
+      it("Display empty list if fileDataset props is an empty list", () => {
+        const localProps = {
+          ...props,
+          fileDataset: []
+        };
+        const el = shallow(<CreateDiary {...localProps} />);
+        expect(el.find(".media____empty").length).toBe(5);
+      });
+    });
+
+    describe("uploadedFileDataset props", () => {
+      it("IMG attributes should use each data", () => {
+        const localProps: any = {
+          ...props,
+          uploadedFileDataset: [FILE1, FILE2]
+        };
+        const el = shallow(<CreateDiary {...localProps} />);
+        const medias = el.find(".mediaList____done .media");
+        expect(
+          medias
+            .at(0)
+            .find("img")
+            .prop("src")
+        ).toBe(FILE1.path);
+        expect(
+          medias
+            .at(1)
+            .find("img")
+            .prop("src")
+        ).toBe(FILE2.path);
+        expect(
+          medias
+            .at(0)
+            .find("img")
+            .prop("title")
+        ).toBe(escape(FILE1.file.name));
+        expect(
+          medias
+            .at(1)
+            .find("img")
+            .prop("title")
+        ).toBe(escape(FILE2.file.name));
+        expect(
+          medias
+            .at(0)
+            .find("img")
+            .prop("alt")
+        ).toBe(escape(FILE1.file.name));
+        expect(
+          medias
+            .at(1)
+            .find("img")
+            .prop("alt")
+        ).toBe(escape(FILE2.file.name));
+      });
+      it("Display nothing if uploadedFileDataset props is undefined", () => {
+        const localProps = {
+          ...props,
+          uploadedFileDataset: undefined
+        };
+        const el = shallow(<CreateDiary {...localProps} />);
+        expect(el.find(".mediaList____done")).toHaveLength(0);
+      });
+      it("Display nothing if uploadedFileDataset props is an empty list", () => {
+        const localProps = {
+          ...props,
+          uploadedFileDataset: []
+        };
+        const el = shallow(<CreateDiary {...localProps} />);
+        expect(el.find(".mediaList____done")).toHaveLength(0);
+      });
+    });
+
+    describe("errorMessages props", () => {
+      const MESSAGES = ["foo", "bar"];
+      const localProps: any = {
+        ...props,
+        errorMessages: MESSAGES
+      };
+      const el = shallow(<CreateDiary {...localProps} />);
+      it('has "messages__item"s that includes each messages', () => {
+        const items = el.find(".messages__item");
+        expect(items.length).toBe(MESSAGES.length);
+        expect(
+          items
+            .at(0)
+            .text()
+            .trim()
+        ).toBe(MESSAGES[0]);
+        expect(
+          items
+            .at(1)
+            .text()
+            .trim()
+        ).toBe(MESSAGES[1]);
+      });
+    });
+
+    describe("resultMessages props", () => {
+      const MESSAGES = ["foo", "bar"];
+      const localProps: any = {
+        ...props,
+        resultMessages: MESSAGES
+      };
+      const el = shallow(<CreateDiary {...localProps} />);
+      it('has "messages__item"s that includes each messages', () => {
+        const items = el.find(".messages__item");
+        expect(items.length).toBe(MESSAGES.length);
+        expect(
+          items
+            .at(0)
+            .text()
+            .trim()
+        ).toBe(MESSAGES[0]);
+        expect(
+          items
+            .at(1)
+            .text()
+            .trim()
+        ).toBe(MESSAGES[1]);
       });
     });
   });

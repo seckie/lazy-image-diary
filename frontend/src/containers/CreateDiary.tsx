@@ -20,11 +20,10 @@ export function mapDispatchToProps(dispatch: Dispatch) {
 
 interface IUser {
   name: string;
-  accessToken?: string;
-  user?: object;
 }
 
 interface IProps {
+  user: IUser;
   uploadedFileDataset: IFileData[];
   fileDataset: IFileData[];
   resultMessages: string[];
@@ -35,10 +34,6 @@ interface IProps {
 }
 
 export const CreateDiary: React.FC<IProps> = props => {
-  const tempUser: IUser = {
-    name: "User A"
-  };
-
   let emptyList = new Array(5).fill("");
   emptyList = emptyList.map((item, i) => (
     <li className="media media____empty" key={i} />
@@ -50,7 +45,9 @@ export const CreateDiary: React.FC<IProps> = props => {
         <p className="logo">
           <a href="/">Lazy Image Diary</a>
         </p>
-        <p className="userInfo">Evernote ID: {tempUser.name}</p>
+        {props.user && (
+          <p className="userInfo">Evernote ID: {props.user.name}</p>
+        )}
       </header>
       <div className="uploadUI1">
         <p className="uploadInput">
@@ -84,41 +81,42 @@ export const CreateDiary: React.FC<IProps> = props => {
           </button>
         </p>
         <ul className="messages">
-          {props.resultMessages.map(message => {
+          {props.resultMessages.map((message, i) => {
             return (
-              <li className="messages__item">
+              <li className="messages__item" key={i}>
                 <i className="fas fa-check"></i> {message}
               </li>
             );
           })}
-          {props.errorMessages.map(message => {
+          {props.errorMessages.map((message, i) => {
             return (
-              <li className="messages__item">
+              <li className="messages__item" key={i}>
                 <i className="fas fa-times"></i> {message}
               </li>
             );
           })}
         </ul>
       </div>
-      <div className="mediaList">
+      <div className="mediaList mediaList____undone">
         <ul className="medias">
           {(!props.fileDataset || !props.fileDataset[0]) && emptyList}
-          {props.fileDataset.map((data: IFileData, i: number) => {
-            const mediaCName = classNames({
-              media: true,
-              media____uploading: props.isUploading
-            });
-            return (
-              <li className={mediaCName} key={`media${i}`}>
-                <img
-                  className="thumb"
-                  src={data.path}
-                  title={global.escape(data.file.name)}
-                  alt={global.escape(data.file.name)}
-                />
-              </li>
-            );
-          })}
+          {props.fileDataset &&
+            props.fileDataset.map((data: IFileData, i: number) => {
+              const mediaCName = classNames({
+                media: true,
+                media____uploading: props.isUploading
+              });
+              return (
+                <li className={mediaCName} key={`media${i}`}>
+                  <img
+                    className="thumb"
+                    src={data.path}
+                    title={global.escape(data.file.name)}
+                    alt={global.escape(data.file.name)}
+                  />
+                </li>
+              );
+            })}
         </ul>
       </div>
       {props.uploadedFileDataset && props.uploadedFileDataset[0] && (
