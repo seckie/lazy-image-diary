@@ -31,53 +31,6 @@ export function* oauthCallback() {
   yield put({ type: OAUTH_CALLBACK_SUCCESS, payload: res.data });
 }
 
-export function* uploadFilesFromField(action: IFileFieldOnChangeAction) {
-  const files: File[] = action && action.payload && action.payload.files;
-  const token: string = `Bearer ${sessionStorage.getItem("accessToken")}`;
-  if (!files || !files[0]) {
-    return;
-  }
-  const imageFiles = Array.prototype.filter.call(files, (f: File) =>
-    f.type.match("image.*")
-  );
-  if (!imageFiles || !imageFiles[0]) {
-    return;
-  }
-  try {
-    let fileDataset = [];
-    for (let i = 0, l = imageFiles.length; i < l; i++) {
-      const f: File = imageFiles[i];
-      const fileData = yield readFile(f);
-      const action: IAction = {
-        type: FILE_READ,
-        payload: {
-          fileDataset: [fileData]
-        }
-      };
-      yield put(action);
-      fileDataset.push(fileData);
-    }
-
-    yield call(uploadFile, imageFiles, token);
-    fileDataset = fileDataset.map(data => {
-      return {
-        ...data,
-        status: UPLOAD_STATUS.complete
-      };
-    });
-    yield put({
-      type: UPLOAD_COMPLETE,
-      payload: { fileDataset }
-    });
-  } catch (e) {
-    const payload = {
-      message: typeof e.message === "string" ? e.message : e
-    };
-    yield put({ type: FILE_HANDLE_ERROR, payload });
-    return;
-  }
-}
-
 export function* readFilesFromField(action: IFileFieldOnChangeAction) {
   const files: File[] = action && action.payload && action.payload.files;
   if (!files || !files[0]) {
@@ -135,7 +88,6 @@ export function* uploadFilesSaga(action: IUploadAction) {
 export default function* rootSaga() {
   yield takeEvery(SIGN_IN, signIn);
   yield takeEvery(OAUTH_CALLBACK, oauthCallback);
-  // yield takeEvery(FILE_FIELD_ON_CHANGE, uploadFilesFromField)
   yield takeEvery(FILE_FIELD_ON_CHANGE, readFilesFromField);
   yield takeEvery(UPLOAD_START, uploadFilesSaga);
 }
