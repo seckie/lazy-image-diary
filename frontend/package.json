@@ -59,6 +59,7 @@
       "src/**/*.{ts,tsx}",
       "!src/**/*.d.ts",
       "!src/**/constants/**/*",
+      "!src/**/models/**/*",
       "!src/serviceWorker.ts"
     ]
   }
