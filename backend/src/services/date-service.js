@@ -36,7 +36,8 @@ const dateService = {
   },
 
   splitDatasetByLastModified(dataset) {
-    const groupObj = _.groupBy(dataset, d => moment(d.lastModified).format('YYYY-MM-DD'));
+    const sortedDataset = dataset.sort((d1, d2) => d1.lastModified - d2.lastModified);
+    const groupObj = _.groupBy(sortedDataset, d => moment(d.lastModified).format('YYYY-MM-DD'));
     const groups = _.values(groupObj);
     groups.sort((group1, group2) => group1[0].lastModified - group2[0].lastModified);
     return groups;
