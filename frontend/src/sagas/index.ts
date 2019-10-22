@@ -15,7 +15,6 @@ import {
 import { apiSignIn, apiOAuthCallback } from "../services/api";
 import { IFileFieldOnChangeAction, IUploadAction } from "../actions/";
 import { IFileData } from "../models/";
-import { UPLOAD_STATUS } from "../constants/";
 import { readFile, uploadFile } from "../services/file";
 import { IAction } from "../reducers";
 
