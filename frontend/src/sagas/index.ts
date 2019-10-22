@@ -56,7 +56,7 @@ export function* readFilesFromField(action: IFileFieldOnChangeAction) {
     }
   } catch (e) {
     const payload = {
-      message: typeof e.message === "string" ? e.message : e
+      message: e.message
     };
     yield put({ type: FILE_HANDLE_ERROR, payload });
   }
@@ -79,7 +79,7 @@ export function* uploadFilesSaga(action: IUploadAction) {
     });
   } catch (e) {
     const payload = {
-      message: typeof e.message === "string" ? e.message : e
+      message: e.message
     };
     yield put({ type: FILE_HANDLE_ERROR, payload });
   }

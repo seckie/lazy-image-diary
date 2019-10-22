@@ -267,14 +267,14 @@ describe("Sagas", () => {
       expect(dispatched.slice(0, 1)).toEqual(expected);
     });
 
-    it('call "uploadFile" with files', async () => {
+    it('call "uploadFilesSaga" with files', async () => {
       await runSaga(sagaIO, uploadFilesSaga, action).toPromise();
       const expected1 = [FILES[0].file, FILES[1].file];
       const expected2 = `Bearer ${TOKEN}`;
       expect(uploadFileMock).toBeCalledWith(expected1, expected2);
     });
 
-    xit("put UPLOAD_COMPLETE action with payload", async () => {
+    it("put UPLOAD_COMPLETE action with payload", async () => {
       await runSaga(sagaIO, uploadFilesSaga, action).toPromise();
       const payload = {
         uploadedFileDataset: [{ ...FILES[0] }, { ...FILES[1] }]
@@ -285,20 +285,23 @@ describe("Sagas", () => {
           payload
         }
       ];
-      expect(dispatched.slice(0, 2)).toEqual(expected);
+      expect(dispatched.slice(-1)).toEqual(expected);
     });
 
-    xit("put FILE_HANDLE_ERROR if readFile() was failed", async () => {
+    it("put FILE_HANDLE_ERROR if uploadFile() was failed", async () => {
       const expected = [
+        {
+          type: UPLOAD_STARTED
+        },
         {
           type: FILE_HANDLE_ERROR,
           payload: ERROR
         }
       ];
-      (readFile as jest.Mock).mockImplementation(() => {
+      (uploadFile as jest.Mock).mockImplementation(() => {
         throw ERROR;
       });
-      await runSaga(sagaIO, readFilesFromField, action).toPromise();
+      await runSaga(sagaIO, uploadFilesSaga, action).toPromise();
       expect(dispatched).toEqual(expected);
     });
   });
