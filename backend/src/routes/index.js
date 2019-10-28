@@ -81,9 +81,6 @@ router.post(
       return res.status(400).send('No request body or file');
     }
     const token = req.headers.authorization.replace(/Bearer\s/, '') || req.session.oauthToken;
-    // TODO
-    // req.files配列をすべてアップロードしたいが、
-    // いったん一つだけアップロード可能な実装にし、あとで修正する
     const lastModifiedStrings = JSON.parse(req.body.fileLastModified);
     const dataset = req.files.map((file, i) => ({
       ...file,
