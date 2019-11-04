@@ -102,6 +102,10 @@ a {
   color: #ccc;
   cursor: default;
 }
+.btn-evernote-signin {
+  color: white;
+  background-color: rgb(111, 181, 54);
+}
 
 /*
  * Input

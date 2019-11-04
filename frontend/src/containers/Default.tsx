@@ -32,7 +32,7 @@ export class Default extends React.Component<IProps> {
               className="btn btn-evernote-signin"
               onClick={this.props.onClickSignIn}
             >
-              Evernote Sign-in
+              Sign-in with Evernote
             </button>
           </p>
         </div>
