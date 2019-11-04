@@ -25,8 +25,8 @@ export function* signIn() {
 
 export function* oauthCallback() {
   const res: AxiosResponse = yield call(apiOAuthCallback);
-  sessionStorage.setItem("accessToken", res.data.accessToken);
-  sessionStorage.setItem("user", res.data.user);
+  window.sessionStorage.setItem("accessToken", res.data.accessToken);
+  window.sessionStorage.setItem("user", res.data.user);
   yield put({ type: OAUTH_CALLBACK_SUCCESS, payload: res.data });
 }
 
@@ -64,7 +64,9 @@ export function* readFilesFromField(action: IFileFieldOnChangeAction) {
 export function* uploadFilesSaga(action: IUploadAction) {
   const fileDataset: IFileData[] =
     action && action.payload && action.payload.fileDataset;
-  const token: string = `Bearer ${sessionStorage.getItem("accessToken")}`;
+  const token: string = `Bearer ${window.sessionStorage.getItem(
+    "accessToken"
+  )}`;
   if (!fileDataset || !fileDataset[0]) {
     return;
   }

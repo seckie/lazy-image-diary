@@ -1,13 +1,25 @@
 import * as React from "react";
-import { shallow } from "enzyme";
+import { shallow, mount } from "enzyme";
 import {
   CreateDiary,
   mapStateToProps,
   mapDispatchToProps
 } from "../../containers/CreateDiary";
 import actions from "../../actions";
+import { act } from "react-dom/test-utils";
 
 describe("CreateDiary", () => {
+  const TOKEN = "token";
+  const USER_NAME = "name";
+  const FILE1 = {
+    file: { name: "file1" },
+    path: "path1"
+  };
+  const FILE2 = {
+    file: { name: "file2&()\\" },
+    path: "path2"
+  };
+
   describe("mapStateToProps", () => {
     const state = {
       test: "test"
@@ -43,15 +55,6 @@ describe("CreateDiary", () => {
     });
   });
   describe("render", () => {
-    const USER_NAME = "name";
-    const FILE1 = {
-      file: { name: "file1" },
-      path: "path1"
-    };
-    const FILE2 = {
-      file: { name: "file2&()\\" },
-      path: "path2"
-    };
     const props: any = {
       user: {
         name: USER_NAME
@@ -273,6 +276,43 @@ describe("CreateDiary", () => {
             .trim()
         ).toBe(MESSAGES[1]);
       });
+    });
+  });
+  describe("Redirect", () => {
+    const props: any = {
+      user: {
+        name: USER_NAME
+      },
+      fileDataset: [],
+      onChange: jest.fn()
+    };
+    it("If there is no Token, redirect to index", () => {
+      const history: any = {
+        replace: jest.fn()
+      };
+      const localProps = {
+        ...props,
+        history
+      };
+      act(() => {
+        mount(<CreateDiary {...localProps} />);
+      });
+      expect(history.replace).toBeCalledWith("/");
+    });
+    it("If there is a Token, not to redirect", () => {
+      window.sessionStorage.setItem("accessToken", TOKEN);
+      const history: any = {
+        replace: jest.fn()
+      };
+      const localProps = {
+        ...props,
+        history
+      };
+      act(() => {
+        mount(<CreateDiary {...localProps} />);
+      });
+      expect(history.replace).not.toBeCalled();
+      window.sessionStorage.removeItem("accessToken");
     });
   });
 });

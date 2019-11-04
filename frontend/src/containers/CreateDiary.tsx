@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import classNames from "classnames";
+import history from "history";
 
 import actions from "../actions/";
-import { IFileData } from "../models/";
+import { IFileData, IUser } from "../models/";
 
 export function mapStateToProps(state: any) {
   return state;
@@ -18,12 +19,9 @@ export function mapDispatchToProps(dispatch: Dispatch) {
   };
 }
 
-interface IUser {
-  name: string;
-}
-
 interface IProps {
   user: IUser;
+  accessToken: string;
   uploadedFileDataset: IFileData[];
   fileDataset: IFileData[];
   resultMessages: string[];
@@ -31,9 +29,16 @@ interface IProps {
   isUploading: boolean;
   onChange: (e: React.FormEvent) => void;
   onSubmit: (fileDataest: IFileData[]) => void;
+  history: history.History;
 }
 
 export const CreateDiary: React.FC<IProps> = props => {
+  useEffect(() => {
+    if (!window.sessionStorage.getItem("accessToken")) {
+      props.history.replace("/");
+    }
+  });
+
   let emptyList = new Array(5).fill("");
   emptyList = emptyList.map((item, i) => (
     <li className="media media____empty" key={i} />

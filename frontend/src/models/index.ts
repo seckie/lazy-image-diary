@@ -5,3 +5,7 @@ export interface IFileData {
   path: string;
   status?: UPLOAD_STATUS;
 }
+
+export interface IUser {
+  name: string;
+}
