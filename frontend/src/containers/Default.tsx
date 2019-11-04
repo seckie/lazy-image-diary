@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { TermsOfService } from "../components/TermsOfService";
+import { Lead } from "../components/Lead";
 
 import actions from "../actions/";
 
@@ -26,16 +27,7 @@ export class Default extends React.Component<IProps> {
         <header className="globalHeader">
           <h1 className="logo">Lazy Image Diary</h1>
         </header>
-        <div className="lead">
-          <p>
-            <button
-              className="btn btn-evernote-signin"
-              onClick={this.props.onClickSignIn}
-            >
-              Sign-in with Evernote
-            </button>
-          </p>
-        </div>
+        <Lead onClickSignIn={this.props.onClickSignIn} />
         <TermsOfService />
       </div>
     );
