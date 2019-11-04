@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
+import { TermsOfService } from "../components/TermsOfService";
 
 import actions from "../actions/";
 
@@ -35,6 +36,7 @@ export class Default extends React.Component<IProps> {
             </button>
           </p>
         </div>
+        <TermsOfService />
       </div>
     );
   }

@@ -13,6 +13,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1 {
+  font-size: 1.5rem;
+}
+h2 {
+  font-size: 1.2rem;
+}
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
@@ -26,9 +32,11 @@ a {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  box-sizing: border-box;
   width: 100%;
-  max-width: 1004px;
+  max-width: 1028px;
   margin: 0 auto;
+  padding: 0 12px;
 }
 .lead {
   width: 100%;
@@ -185,4 +193,14 @@ a {
 
 .media.media____error img {
   opacity: 0.5;
+}
+
+/*
+* font awesome
+*/
+.fa-times {
+  color: #f66;
+}
+.fa-check {
+  color: #3c9;
 }
