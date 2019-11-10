@@ -1,7 +1,7 @@
 import React from "react";
 import "./Lead.css";
 
-interface IProps {
+export interface IProps {
   onClickSignIn: () => void;
 }
 
