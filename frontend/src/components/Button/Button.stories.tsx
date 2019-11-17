@@ -31,5 +31,5 @@ stories.add(
       </>
     );
   },
-  { notes: 'Lead text' }
+  { notes: 'Button' }
 );

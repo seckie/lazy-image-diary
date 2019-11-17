@@ -1,0 +1,13 @@
+.checklist__item {
+  margin: 0 0 0 1em;
+}
+
+/*
+* font awesome
+*/
+.fa-times {
+  color: #f66;
+}
+.fa-check {
+  color: #3c9;
+}
