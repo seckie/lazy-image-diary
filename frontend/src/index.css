@@ -6,9 +6,8 @@ body {
   padding: 0;
   color: #666;
   font-size: 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+    'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -20,8 +19,7 @@ h2 {
   font-size: 1.2rem;
 }
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 a {
@@ -76,32 +74,6 @@ a {
 }
 
 /*
- * Button
- */
-.btn {
-  max-width: 360px;
-  width: 100%;
-  padding: 0;
-  color: #666;
-  border-radius: 8px;
-  border: 0;
-  background-color: #d1d1d1;
-  font-size: 20px;
-  line-height: 52px;
-  text-align: center;
-  cursor: pointer;
-}
-.btn:disabled {
-  background-color: #f3f3f3;
-  color: #ccc;
-  cursor: default;
-}
-.btn-evernote-signin {
-  color: white;
-  background-color: rgb(111, 181, 54);
-}
-
-/*
  * Input
  */
 .inputFile label {
@@ -118,7 +90,7 @@ a {
   text-align: center;
   cursor: pointer;
 }
-.inputFile input[type="file"] {
+.inputFile input[type='file'] {
   display: none;
 }
 
@@ -134,7 +106,7 @@ a {
   line-height: 1.75;
 }
 .notes li:before {
-  content: "*";
+  content: '*';
   margin-right: 0.5em;
 }
 
