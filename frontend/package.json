@@ -63,6 +63,7 @@
     "collectCoverageFrom": [
       "src/**/*.{ts,tsx}",
       "!src/**/*.d.ts",
+      "!src/**/*.stories.tsx",
       "!src/**/constants/**/*",
       "!src/**/models/**/*",
       "!src/(App|index).tsx",
