@@ -6,7 +6,7 @@ import {
   mapDispatchToProps
 } from "../../containers/Default";
 import actions from "../../actions";
-import { Lead } from "../../components/Lead";
+import { Lead } from "../../components/Lead/Lead";
 
 describe("Default", () => {
   describe("mapStateToProps", () => {

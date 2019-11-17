@@ -1,6 +1,6 @@
 import * as React from "react";
 import { shallow } from "enzyme";
-import { Lead, IProps as ILeadProps } from "../../components/Lead";
+import { Lead, IProps as ILeadProps } from "../../components/Lead/Lead";
 
 describe("Lead component", () => {
   describe("props", () => {

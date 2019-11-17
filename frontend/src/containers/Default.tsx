@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { TermsOfService } from "../components/TermsOfService";
-import { Lead } from "../components/Lead";
+import { Lead } from "../components/Lead/Lead";
 
 import actions from "../actions/";
 

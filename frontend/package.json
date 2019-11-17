@@ -28,6 +28,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "storybook": "start-storybook",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "testcoverage": "react-scripts test --coverage --watchAll=false",
@@ -49,6 +50,8 @@
     ]
   },
   "devDependencies": {
+    "@storybook/react": "^5.2.6",
+    "babel-loader": "^8.0.6",
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.14.0",
     "react-test-renderer": "^16.9.0",
