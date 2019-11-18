@@ -15,7 +15,12 @@ describe('CheckListeItem component', () => {
         style: CheckListItemStyle.OK
       };
       const el = shallow(<CheckListItem {...props} />);
-      expect(el.find('dd').text()).toBe(TEXT);
+      expect(
+        el
+          .find('dd')
+          .text()
+          .trim()
+      ).toBe(TEXT);
     });
     it('style prop should change icon style OK', () => {
       const props: ICheckListeItemProps = {

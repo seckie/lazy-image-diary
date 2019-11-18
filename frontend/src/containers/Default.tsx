@@ -1,10 +1,10 @@
-import React from "react";
-import { connect } from "react-redux";
-import { Dispatch } from "redux";
-import { TermsOfService } from "../components/TermsOfService";
-import { Lead } from "../components/Lead/Lead";
+import React from 'react';
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
+import { TermsOfService } from '../components/TermsOfService/TermsOfService';
+import { Lead } from '../components/Lead/Lead';
 
-import actions from "../actions/";
+import actions from '../actions/';
 
 export interface IProps {
   onClickSignIn: () => void;
