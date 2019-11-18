@@ -3,7 +3,7 @@ import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import { Lead, IProps } from './Lead';
 
-const stories = storiesOf('Atoms', module);
+const stories = storiesOf('Organisms', module);
 
 stories.add(
   'Lead',
