@@ -45,18 +45,6 @@ a {
   justify-content: space-between;
   width: 100%;
 }
-.globalHeader .logo {
-  width: 49%;
-}
-.globalHeader .logo a {
-  display: block;
-  width: 154px;
-  border: 1px solid #ccc;
-  color: #666;
-  text-align: center;
-  text-decoration: none;
-  line-height: 58px;
-}
 .globalHeader .userInfo {
   width: 49%;
   text-align: right;

@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { TermsOfService } from '../components/TermsOfService/TermsOfService';
 import { Lead } from '../components/Lead/Lead';
+import { Logo } from '../components/Logo/Logo';
 
 import actions from '../actions/';
 
@@ -25,7 +26,7 @@ export class Default extends React.Component<IProps> {
     return (
       <div className="app">
         <header className="globalHeader">
-          <h1 className="logo">Lazy Image Diary</h1>
+          <Logo />
         </header>
         <Lead onClickSignIn={this.props.onClickSignIn} />
         <TermsOfService />
