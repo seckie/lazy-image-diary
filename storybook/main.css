@@ -1,0 +1,72 @@
+/*
+ * Button
+ */
+.button {
+  max-width: 360px;
+  width: 100%;
+  padding: 0;
+  color: #666;
+  border-radius: 8px;
+  border: 0;
+  background-color: #d1d1d1;
+  font-size: 20px;
+  line-height: 52px;
+  text-align: center;
+  cursor: pointer;
+}
+.button:disabled {
+  background-color: #f3f3f3;
+  color: #ccc;
+  cursor: default;
+}
+.button____evernote {
+  color: white;
+  background-color: rgb(111, 181, 54);
+}
+
+.checklist__item {
+  margin: 0 0 0 1em;
+}
+
+/*
+* font awesome
+*/
+.fa-times {
+  color: #f66;
+}
+.fa-check {
+  color: #3c9;
+}
+
+.checklist {
+  margin: 0 0 0.5em;
+}
+.checklist__title {
+  margin: 0.5em 0 0 0;
+  font-weight: bold;
+}
+
+.lead {
+  width: 100%;
+  font-size: 1rem;
+  line-height: 2;
+}
+.lead__btn {
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+.terms {
+  padding: 0 0 0 1.25em;
+  font-size: 0.8rem;
+}
+.terms__item {
+  margin: 0 0 0.1em;
+}
+
+.termsofservice {
+  clear: both;
+}
+
+
+/*# sourceMappingURL=main.css.map*/
