@@ -1,11 +1,13 @@
-import React, { useEffect } from "react";
-import { connect } from "react-redux";
-import { Dispatch } from "redux";
-import classNames from "classnames";
-import history from "history";
+import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
+import classNames from 'classnames';
+import history from 'history';
 
-import actions from "../actions/";
-import { IFileData, IUser } from "../models/";
+import { Logo } from '../components/Logo/Logo';
+import { UserInfo } from '../components/UserInfo/UserInfo';
+import actions from '../actions/';
+import { IFileData, IUser } from '../models/';
 
 export function mapStateToProps(state: any) {
   return state;
@@ -14,8 +16,7 @@ export function mapStateToProps(state: any) {
 export function mapDispatchToProps(dispatch: Dispatch) {
   return {
     onChange: (e: React.FormEvent) => dispatch(actions.fileFieldOnChange(e)),
-    onSubmit: (fileDataset: IFileData[]) =>
-      dispatch(actions.uploadFiles(fileDataset))
+    onSubmit: (fileDataset: IFileData[]) => dispatch(actions.uploadFiles(fileDataset))
   };
 }
 
@@ -34,25 +35,19 @@ interface IProps {
 
 export const CreateDiary: React.FC<IProps> = props => {
   useEffect(() => {
-    if (!window.sessionStorage.getItem("accessToken")) {
-      props.history.replace("/");
+    if (!window.sessionStorage.getItem('accessToken')) {
+      props.history.replace('/');
     }
   });
 
-  let emptyList = new Array(5).fill("");
-  emptyList = emptyList.map((item, i) => (
-    <li className="media media____empty" key={i} />
-  ));
+  let emptyList = new Array(5).fill('');
+  emptyList = emptyList.map((item, i) => <li className="media media____empty" key={i} />);
 
   return (
     <div className="app">
       <header className="globalHeader">
-        <p className="logo">
-          <a href="/">Lazy Image Diary</a>
-        </p>
-        {props.user && (
-          <p className="userInfo">Evernote ID: {props.user.name}</p>
-        )}
+        <Logo href="/" />
+        {props.user && <UserInfo evernoteID={props.user.name} />}
       </header>
       <div className="uploadUI1">
         <p className="uploadInput">
