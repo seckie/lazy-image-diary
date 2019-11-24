@@ -7,8 +7,11 @@ import history from 'history';
 import { Logo } from '../components/Logo/Logo';
 import { UserInfo } from '../components/UserInfo/UserInfo';
 import { UploadInput } from '../components/UploadInput/UploadInput';
+import { Notes } from '../components/Notes/Notes';
 import actions from '../actions/';
 import { IFileData, IUser } from '../models/';
+
+const noteItems: string[] = ['選択できる画像ファイルは一度に20個まで', '画像ファイルのサイズは一つ最大15MBまで'];
 
 export function mapStateToProps(state: any) {
   return state;
@@ -52,10 +55,7 @@ export const CreateDiary: React.FC<IProps> = props => {
       </header>
       <div className="uploadUI1">
         <UploadInput onChange={props.onChange} />
-        <ul className="notes">
-          <li>選択できる画像ファイルは一度に20個まで </li>
-          <li>画像ファイルのサイズは一つ最大15MBまで</li>
-        </ul>
+        <Notes items={noteItems} />
       </div>
       <div className="uploadUI2">
         <p className="uploadInput">
