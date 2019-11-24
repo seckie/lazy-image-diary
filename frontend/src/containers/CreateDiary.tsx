@@ -6,6 +6,7 @@ import history from 'history';
 
 import { Logo } from '../components/Logo/Logo';
 import { UserInfo } from '../components/UserInfo/UserInfo';
+import { UploadInput } from '../components/UploadInput/UploadInput';
 import actions from '../actions/';
 import { IFileData, IUser } from '../models/';
 
@@ -50,19 +51,7 @@ export const CreateDiary: React.FC<IProps> = props => {
         {props.user && <UserInfo evernoteID={props.user.name} />}
       </header>
       <div className="uploadUI1">
-        <p className="uploadInput">
-          <span className="inputFile">
-            <label htmlFor="imagefiles">画像ファイルを選択</label>
-            <input
-              type="file"
-              name="imagefiles[]"
-              id="imagefiles"
-              multiple
-              accept=".jpg,.jpeg,.png,.gif"
-              onChange={props.onChange}
-            />
-          </span>
-        </p>
+        <UploadInput onChange={props.onChange} />
         <ul className="notes">
           <li>選択できる画像ファイルは一度に20個まで </li>
           <li>画像ファイルのサイズは一つ最大15MBまで</li>

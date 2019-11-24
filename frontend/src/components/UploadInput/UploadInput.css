@@ -1,0 +1,17 @@
+.uploadInput label {
+  display: inline-block;
+  max-width: 360px;
+  width: 100%;
+  padding: 0;
+  color: #666;
+  border-radius: 8px;
+  border: 0;
+  background-color: #d1d1d1;
+  font-size: 20px;
+  line-height: 52px;
+  text-align: center;
+  cursor: pointer;
+}
+.uploadInput input[type='file'] {
+  display: none;
+}
