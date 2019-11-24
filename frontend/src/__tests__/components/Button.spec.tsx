@@ -12,7 +12,14 @@ describe('Button component', () => {
       const el = shallow(<Button {...props} />);
       expect(el.text()).toBe(props.label);
     });
-    it('onClickSignIn prop should be set to "onClick" prop', () => {
+    it('disable prop should be set to "disabled" prop', () => {
+      const props: IButtonProps = {
+        disabled: true
+      };
+      const el = shallow(<Button {...props} />);
+      expect(el.prop('disabled')).toEqual(props.disabled);
+    });
+    it('onClick prop should be set to "onClick" prop', () => {
       const props: IButtonProps = {
         onClick: jest.fn()
       };
