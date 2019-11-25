@@ -8,6 +8,8 @@ import { Logo } from '../components/Logo/Logo';
 import { UserInfo } from '../components/UserInfo/UserInfo';
 import { UploadInput } from '../components/UploadInput/UploadInput';
 import { Notes } from '../components/Notes/Notes';
+import { Button } from '../components/Button/Button';
+import { Messages } from '../components/Messages/Messages';
 import actions from '../actions/';
 import { IFileData, IUser } from '../models/';
 
@@ -47,6 +49,10 @@ export const CreateDiary: React.FC<IProps> = props => {
   let emptyList = new Array(5).fill('');
   emptyList = emptyList.map((item, i) => <li className="media media____empty" key={i} />);
 
+  const onClickUpload = () => {
+    props.onSubmit(props.fileDataset);
+  };
+
   return (
     <div className="app">
       <header className="globalHeader">
@@ -58,33 +64,8 @@ export const CreateDiary: React.FC<IProps> = props => {
         <Notes items={noteItems} />
       </div>
       <div className="uploadUI2">
-        <p className="uploadInput">
-          <button
-            className="btn"
-            disabled={props.isUploading}
-            onClick={() => {
-              props.onSubmit(props.fileDataset);
-            }}
-          >
-            アップロード
-          </button>
-        </p>
-        <ul className="messages">
-          {props.resultMessages.map((message, i) => {
-            return (
-              <li className="messages__item" key={i}>
-                <i className="fas fa-check"></i> {message}
-              </li>
-            );
-          })}
-          {props.errorMessages.map((message, i) => {
-            return (
-              <li className="messages__item" key={i}>
-                <i className="fas fa-times"></i> {message}
-              </li>
-            );
-          })}
-        </ul>
+        <Button label="アップロード" disabled={props.isUploading} onClick={onClickUpload} />
+        <Messages messages={props.resultMessages} errorMessages={props.errorMessages} />
       </div>
       <div className="mediaList mediaList____undone">
         <ul className="medias">
