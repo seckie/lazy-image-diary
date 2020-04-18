@@ -1,3 +1,6 @@
+.uploadInput {
+  margin: 0;
+}
 .uploadInput label {
   display: inline-block;
   max-width: 360px;
