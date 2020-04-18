@@ -94,7 +94,16 @@ router.post(
         });
       },
       err => {
-        res.status(400).send(err.message || err.parameter);
+        switch (err.message) {
+          case 'You have to login':
+            res.status(401).send(err.message);
+            break;
+          case 'Unexpected field':
+            res.status(400).send(err.message || err.parameter);
+            break;
+          default:
+            res.status(400).send(err.message || err.parameter);
+        }
       }
     );
   },

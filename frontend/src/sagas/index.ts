@@ -1,5 +1,5 @@
-import { call, put, takeEvery } from "redux-saga/effects";
-import { AxiosResponse } from "axios";
+import { call, put, takeEvery } from 'redux-saga/effects';
+import { AxiosResponse } from 'axios';
 import {
   SIGN_IN,
   SIGN_IN_SUCCESS,
@@ -11,12 +11,12 @@ import {
   UPLOAD_START,
   UPLOAD_STARTED,
   UPLOAD_COMPLETE
-} from "../constants";
-import { apiSignIn, apiOAuthCallback } from "../services/api";
-import { IFileFieldOnChangeAction, IUploadAction } from "../actions/";
-import { IFileData } from "../models/";
-import { readFile, uploadFile } from "../services/file";
-import { IAction } from "../reducers";
+} from '../constants';
+import { apiSignIn, apiOAuthCallback } from '../services/api';
+import { IFileFieldOnChangeAction, IUploadAction } from '../actions/';
+import { IFileData } from '../models/';
+import { readFile, uploadFile } from '../services/file';
+import { IAction } from '../reducers';
 
 export function* signIn() {
   const res: AxiosResponse = yield call(apiSignIn);
@@ -25,8 +25,8 @@ export function* signIn() {
 
 export function* oauthCallback() {
   const res: AxiosResponse = yield call(apiOAuthCallback);
-  window.sessionStorage.setItem("accessToken", res.data.accessToken);
-  window.sessionStorage.setItem("user", res.data.user);
+  window.sessionStorage.setItem('accessToken', res.data.accessToken);
+  window.sessionStorage.setItem('user', res.data.user);
   yield put({ type: OAUTH_CALLBACK_SUCCESS, payload: res.data });
 }
 
@@ -35,9 +35,7 @@ export function* readFilesFromField(action: IFileFieldOnChangeAction) {
   if (!files || !files[0]) {
     return;
   }
-  const imageFiles = Array.prototype.filter.call(files, (f: File) =>
-    f.type.match("image.*")
-  );
+  const imageFiles = Array.prototype.filter.call(files, (f: File) => f.type.match('image.*'));
   if (!imageFiles || !imageFiles[0]) {
     return;
   }
@@ -62,11 +60,8 @@ export function* readFilesFromField(action: IFileFieldOnChangeAction) {
 }
 
 export function* uploadFilesSaga(action: IUploadAction) {
-  const fileDataset: IFileData[] =
-    action && action.payload && action.payload.fileDataset;
-  const token: string = `Bearer ${window.sessionStorage.getItem(
-    "accessToken"
-  )}`;
+  const fileDataset: IFileData[] = action && action.payload && action.payload.fileDataset;
+  const token: string = `Bearer ${window.sessionStorage.getItem('accessToken')}`;
   if (!fileDataset || !fileDataset[0]) {
     return;
   }
@@ -80,7 +75,7 @@ export function* uploadFilesSaga(action: IUploadAction) {
     });
   } catch (e) {
     const payload = {
-      message: e.message
+      message: e.response.data
     };
     yield put({ type: FILE_HANDLE_ERROR, payload });
   }
