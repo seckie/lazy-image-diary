@@ -1,8 +1,12 @@
 import * as React from 'react';
 import './Logo.css';
 
-export interface IProps {}
+export interface IProps {
+  href?: string;
+}
 
 export const Logo: React.FC<IProps> = props => {
-  return <h1 className="logo">Lazy Image Diary</h1>;
+  const title = 'Lazy Image Diary';
+  const content = props.href ? <a href={props.href}>{title}</a> : title;
+  return <h1 className="logo">{content}</h1>;
 };

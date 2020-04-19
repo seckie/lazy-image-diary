@@ -3,9 +3,10 @@ import {
   OAUTH_CALLBACK_SUCCESS,
   FILE_READ,
   UPLOAD_STARTED,
-  UPLOAD_COMPLETE
-} from "../constants/";
-import { IFileData } from "../models/";
+  UPLOAD_COMPLETE,
+  FILE_HANDLE_ERROR
+} from '../constants/';
+import { IFileData } from '../models/';
 
 export interface ISignInResponse {
   authorizeUrl?: string;
@@ -23,17 +24,19 @@ export type IState = ISignInResponse &
     isUploading?: boolean;
     fileDataset?: IFileData[];
     uploadedFileDataset?: IFileData[];
+    message?: string;
   };
 
 export const initialState: IState = {
-  accessToken: "",
+  accessToken: '',
   user: {},
-  authorizeUrl: "",
-  oauthToken: "",
-  oauthTokenSecret: "",
+  authorizeUrl: '',
+  oauthToken: '',
+  oauthTokenSecret: '',
   isUploading: false,
   fileDataset: [],
-  uploadedFileDataset: []
+  uploadedFileDataset: [],
+  message: ''
 };
 
 export interface IAction {
@@ -41,25 +44,27 @@ export interface IAction {
   payload: IState;
 }
 
+export const mapMessage = (message?: string) => {
+  switch (message) {
+    case 'Unexpected field':
+      return '画像ファイル数が多すぎます';
+    default:
+      return message;
+  }
+};
+
 export default function rootReducer(state = initialState, action: IAction) {
   switch (action.type) {
     case SIGN_IN_SUCCESS:
-      if (
-        action.payload!.oauthToken &&
-        action.payload!.oauthTokenSecret &&
-        action.payload!.authorizeUrl
-      ) {
-        window.sessionStorage.setItem("oauthToken", action.payload!.oauthToken);
-        window.sessionStorage.setItem(
-          "oauthTokenSecret",
-          action.payload!.oauthTokenSecret
-        );
+      if (action.payload!.oauthToken && action.payload!.oauthTokenSecret && action.payload!.authorizeUrl) {
+        window.sessionStorage.setItem('oauthToken', action.payload!.oauthToken);
+        window.sessionStorage.setItem('oauthTokenSecret', action.payload!.oauthTokenSecret);
         window.location.assign(action.payload!.authorizeUrl);
       }
       return state;
     case OAUTH_CALLBACK_SUCCESS:
-      window.sessionStorage.removeItem("oauthToken");
-      window.sessionStorage.removeItem("oauthTokenSecret");
+      window.sessionStorage.removeItem('oauthToken');
+      window.sessionStorage.removeItem('oauthTokenSecret');
       return {
         ...state,
         accessToken: action.payload.accessToken,
@@ -68,10 +73,7 @@ export default function rootReducer(state = initialState, action: IAction) {
     case FILE_READ:
       return {
         ...state,
-        fileDataset: initialState.fileDataset!.concat(
-          action.payload.fileDataset!,
-          state.fileDataset!
-        )
+        fileDataset: initialState.fileDataset!.concat(action.payload.fileDataset!, state.fileDataset!)
       };
     case UPLOAD_STARTED:
       return {
@@ -88,11 +90,15 @@ export default function rootReducer(state = initialState, action: IAction) {
           );
           return !isIncludedInAction;
         }),
-        uploadedFileDataset: action.payload.uploadedFileDataset!.concat(
-          state.uploadedFileDataset!
-        )
+        uploadedFileDataset: action.payload.uploadedFileDataset!.concat(state.uploadedFileDataset!)
       };
       return newState;
+    case FILE_HANDLE_ERROR:
+      return {
+        ...state,
+        errorMessages: [mapMessage(action.payload.message)],
+        isUploading: false
+      };
     default:
       return state;
   }

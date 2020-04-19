@@ -8,6 +8,7 @@ export enum ButtonStyle {
 
 export interface IProps {
   label?: string;
+  disabled?: boolean;
   onClick?: () => void;
   styles?: ButtonStyle[];
 }
@@ -18,10 +19,14 @@ export const Button: React.FC<IProps> = props => {
     button____evernote: props.styles!.includes(ButtonStyle.evernote)
   });
   return (
-    <button className={cName} onClick={props.onClick}>
+    <button className={cName} disabled={props.disabled} onClick={props.onClick}>
       {props.label}
     </button>
   );
+};
+
+Button.defaultProps = {
+  disabled: false
 };
 
 Button.defaultProps = {

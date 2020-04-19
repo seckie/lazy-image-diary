@@ -15,6 +15,11 @@ stories.add(
       ...props,
       label: 'Default style button'
     };
+    const propsDisabled: IProps = {
+      ...props,
+      disabled: true,
+      label: 'Disabled style button'
+    };
     const propsEvernote: IProps = {
       ...props,
       label: 'Evernote Sign-In style button',
@@ -24,6 +29,9 @@ stories.add(
       <>
         <p>
           <Button {...propsDefault} />
+        </p>
+        <p>
+          <Button {...propsDisabled} />
         </p>
         <p>
           <Button {...propsEvernote} />
