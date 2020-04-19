@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
-import classNames from 'classnames';
 import history from 'history';
 import { ToastContainer, ToastOptions, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,6 +11,8 @@ import { UploadInput } from '../components/UploadInput/UploadInput';
 import { Notes } from '../components/Notes/Notes';
 import { Button } from '../components/Button/Button';
 import { Messages } from '../components/Messages/Messages';
+import { MediaList } from '../components/MediaList/MediaList';
+import { UploadedMediaList } from '../components/UploadedMediaList/UploadedMediaList';
 import actions from '../actions/';
 import { IFileData, IUser } from '../models/';
 
@@ -57,9 +58,6 @@ export const CreateDiary: React.FC<IProps> = props => {
     }
   });
 
-  let emptyList = new Array(5).fill('');
-  emptyList = emptyList.map((item, i) => <li className="media media____empty" key={i} />);
-
   const onClickUpload = () => {
     props.onSubmit(props.fileDataset);
   };
@@ -84,47 +82,8 @@ export const CreateDiary: React.FC<IProps> = props => {
         <Button label="アップロード" disabled={props.isUploading} onClick={onClickUpload} />
         <Messages messages={props.resultMessages} />
       </div>
-      <div className="mediaList mediaList____undone">
-        <ul className="medias">
-          {(!props.fileDataset || !props.fileDataset[0]) && emptyList}
-          {props.fileDataset &&
-            props.fileDataset.map((data: IFileData, i: number) => {
-              const mediaCName = classNames({
-                media: true,
-                media____uploading: props.isUploading
-              });
-              return (
-                <li className={mediaCName} key={`media${i}`}>
-                  <img
-                    className="thumb"
-                    src={data.path}
-                    title={global.escape(data.file.name)}
-                    alt={global.escape(data.file.name)}
-                  />
-                </li>
-              );
-            })}
-        </ul>
-      </div>
-      {props.uploadedFileDataset && props.uploadedFileDataset[0] && (
-        <div className="mediaList mediaList____done">
-          <h2 className="mediaList__h">アップロード済み</h2>
-          <ul className="medias">
-            {props.uploadedFileDataset.map((data: IFileData, i: number) => {
-              return (
-                <li className="media" key={`media${i}`}>
-                  <img
-                    className="thumb"
-                    src={data.path}
-                    title={global.escape(data.file.name)}
-                    alt={global.escape(data.file.name)}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
+      <MediaList dataset={props.fileDataset} isUploading={props.isUploading} />
+      <UploadedMediaList dataset={props.uploadedFileDataset} />
       <ToastContainer
         position="bottom-right"
         autoClose={false}
