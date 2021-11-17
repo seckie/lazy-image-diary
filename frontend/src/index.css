@@ -1,0 +1,57 @@
+/*
+ * Basic
+ */
+body {
+  margin: 0;
+  padding: 0;
+  color: #666;
+  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+    'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+h2 {
+  font-size: 1.2rem;
+}
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+a {
+  color: #00b7ff;
+}
+
+.app {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1028px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+/*
+ * logo
+ */
+.globalHeader {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/*
+ * layout
+ */
+.uploadUI1 {
+  width: 494px;
+}
+.uploadUI2 {
+  width: 494px;
+}

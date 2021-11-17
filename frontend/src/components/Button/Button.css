@@ -1,0 +1,25 @@
+/*
+ * Button
+ */
+.button {
+  max-width: 360px;
+  width: 100%;
+  padding: 0;
+  color: #666;
+  border-radius: 8px;
+  border: 0;
+  background-color: #d1d1d1;
+  font-size: 20px;
+  line-height: 52px;
+  text-align: center;
+  cursor: pointer;
+}
+.button:disabled {
+  background-color: #f3f3f3;
+  color: #ccc;
+  cursor: default;
+}
+.button____evernote {
+  color: white;
+  background-color: rgb(111, 181, 54);
+}
