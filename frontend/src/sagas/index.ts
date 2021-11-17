@@ -18,12 +18,12 @@ import { IFileData } from '../models/';
 import { readFile, uploadFile } from '../services/file';
 import { IAction } from '../reducers';
 
-export function* signIn() {
+export function* signIn(): Generator<any, any, any> {
   const res: AxiosResponse = yield call(apiSignIn);
   yield put({ type: SIGN_IN_SUCCESS, payload: res.data });
 }
 
-export function* oauthCallback() {
+export function* oauthCallback(): Generator<any, any, any> {
   const res: AxiosResponse = yield call(apiOAuthCallback);
   window.sessionStorage.setItem('accessToken', res.data.accessToken);
   window.sessionStorage.setItem('user', res.data.user);
@@ -74,8 +74,14 @@ export function* uploadFilesSaga(action: IUploadAction): Generator<any, any, any
       payload: { uploadedFileDataset: fileDataset }
     });
   } catch (e: any) {
+    let message = '';
+    if (e && e.response) {
+      message = e.response.data;
+    } else if (e && e.message) {
+      message = e.message;
+    }
     const payload = {
-      message: e && e.response ? e.response.data : ''
+      message,
     };
     yield put({ type: FILE_HANDLE_ERROR, payload });
   }
