@@ -87,8 +87,8 @@ class EvernoteService {
   getDiaryNotebook() {
     return new Promise((resolve, reject) => {
       const noteStore = this.getNoteStore();
-      noteStore.listNotebooks().then(notebooks => {
-        const diary = notebooks.find(notebook => {
+      noteStore.listNotebooks().then((notebooks) => {
+        const diary = notebooks.find((notebook) => {
           return notebook.name === NOTEBOOK_NAME;
         });
         if (diary) {
@@ -118,17 +118,17 @@ class EvernoteService {
         includeLargestResourceMime: false,
         includeLargestResourceSize: false
       });
-      noteStore.findNotesMetadata(filter, 0, 100, spec).then(res => {
-        const promises = res.notes.map(note => {
+      noteStore.findNotesMetadata(filter, 0, 100, spec).then((res) => {
+        const promises = res.notes.map((note) => {
           return new Promise((resolve2, reject2) => {
-            noteStore.getNote(note.guid, false, true, false, false).then(noteData => {
+            noteStore.getNote(note.guid, false, true, false, false).then((noteData) => {
               console.log(noteData);
               note.resources = noteData.resources;
               resolve2(note);
             }, reject2);
           });
         });
-        Promise.all(promises).then(notes => {
+        Promise.all(promises).then((notes) => {
           res.notes = notes;
           resolve(res);
         }, reject);
@@ -139,7 +139,7 @@ class EvernoteService {
   async createImageNotes(oauthToken, dataset) {
     const notebook = await this.getDiaryNotebook();
     const splitedDatasets = dateService.splitDatasetByLastModified(dataset);
-    const promises = splitedDatasets.map(files => this._makeImageNote(oauthToken, notebook, files));
+    const promises = splitedDatasets.map((files) => this._makeImageNote(oauthToken, notebook, files));
     return Promise.all(promises);
   }
 
@@ -156,25 +156,26 @@ class EvernoteService {
       const searchTitle = date.format('YYYY-MM-DD');
       const title = `${date.format('YYYY-MM-DD')} [${date.format('ddd').toUpperCase()}]`;
       // - Search a note of today
-      evernoteService.searchNotesWithTitle(noteStore, searchTitle).then(res => {
-        const resourceContainers = files.map(file => this._makeResource(file));
-        const resources = resourceContainers.map(container => container.resource);
+      evernoteService.searchNotesWithTitle(noteStore, searchTitle).then((res) => {
+        const resourceContainers = files.map((file) => this._makeResource(file));
+        const resources = resourceContainers.map((container) => container.resource);
         // Create body
         const notes = res.notes;
         // - If the note was found
         let theNote;
         if (notes && notes[0]) {
-          theNote = notes.find(note => note.title.indexOf(title) !== -1);
+          theNote = notes.find((note) => note.title.indexOf(title) !== -1);
         }
         if (theNote) {
           // Already the note exists so update it
           const noteStore = this.getNoteStore();
-          noteStore.getNoteContent(theNote.guid).then(content => {
+          noteStore.getNoteContent(theNote.guid).then((content) => {
             const updatedDom = resourceContainers.reduce((dom, container, i) => {
               const { resource, hexHash } = container;
               const media = `<en-media hash="${hexHash}" type="${resource.mime}" />`;
               return this._makeNewDom(dom, files[i].lastModified, media);
             }, new JSDOM(content));
+            console.log('updatedDom: ', updatedDom.window.document.body.innerHTML);
             const newNote = this._makeUpdatedNote(theNote, updatedDom.window.document.body.innerHTML, resources);
             noteStore.updateNote(newNote).then(resolve, reject);
           }, reject);
@@ -195,10 +196,7 @@ class EvernoteService {
   }
 
   _makeResource(file) {
-    const hexHash = crypto
-      .createHash('md5')
-      .update(file.buffer)
-      .digest('hex');
+    const hexHash = crypto.createHash('md5').update(file.buffer).digest('hex');
 
     const data = new Evernote.Types.Data();
     data.body = file.buffer;
@@ -221,7 +219,7 @@ class EvernoteService {
     let nBody = `<?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
     <en-note>`;
-    resourceContainers.forEach(container => {
+    resourceContainers.forEach((container) => {
       const { resource, hexHash, lastModified } = container;
       const time = moment(lastModified).format('HH:mm:ss');
       nBody += `<div title="section">
@@ -294,6 +292,8 @@ class EvernoteService {
     return content
       .replace(/(<[hb]r[^>]*>)+<\/en-media>/gi, '</en-media>')
       .replace(/(&nbsp;)+<\/en-media>/gi, '</en-media>')
+      .replace(/<\/en-todo>/gi, '')
+      .replace(/<en-todo([^>]*)>/gi, '<en-todo$1/>')
       .replace(/<br>(<\/\s?br>)?/gi, '<br/>')
       .replace(/<hr>(<\/\s?hr>)?/gi, '<hr/>');
   }
