@@ -13,7 +13,7 @@ describe('evernote-service.js', () => {
   beforeEach(() => {
     originalClient = evernoteService.client;
     // Mock
-    evernoteService.client.getAuthorizeUrl = oauthToken => {
+    evernoteService.client.getAuthorizeUrl = (oauthToken) => {
       return AUTHORIZED_URL;
     };
   });
@@ -22,21 +22,21 @@ describe('evernote-service.js', () => {
     evernoteService.client = originalClient;
   });
   describe('getRequestToken()', () => {
-    it('resolve', cb => {
+    it('resolve', (cb) => {
       // Mock
       evernoteService.client.getRequestToken = jest.fn((cbUrl, callback) => {
         callback(null, OAUTH_TOKEN, OAUTH_TOKEN_SECRET);
       });
 
       const cbUrl = 'http://localhost:9999/foo';
-      evernoteService.getRequestToken(cbUrl).then(result => {
+      evernoteService.getRequestToken(cbUrl).then((result) => {
         expect(result.oauthToken).toBe(OAUTH_TOKEN);
         expect(result.oauthTokenSecret).toBe(OAUTH_TOKEN_SECRET);
         expect(result.authorizeUrl).toBe(AUTHORIZED_URL);
         cb();
       });
     });
-    it('reject', cb => {
+    it('reject', (cb) => {
       // mock
       evernoteService.client.getRequestToken = (cbUrl, callback) => {
         const err = { statusCode: 400 };
@@ -48,7 +48,7 @@ describe('evernote-service.js', () => {
         expect(cb1).not.toHaveBeenCalled();
         cb();
       });
-      const cb2 = jest.fn(err => {
+      const cb2 = jest.fn((err) => {
         expect(cb1).not.toHaveBeenCalled();
         expect(err.statusCode).toBe(400);
         cb();
@@ -71,7 +71,7 @@ describe('evernote-service.js', () => {
     const mockErrorObject = { message: 'error!' };
     const mockErrorObjectNoToken = { message: 'No token' };
 
-    it('resolve', cb => {
+    it('resolve', (cb) => {
       // Mocking
       evernoteService.client.getAccessToken = jest.fn((oauthToken, oauthTokenSecret, oauthVerifier, callback) => {
         const err = undefined;
@@ -79,13 +79,13 @@ describe('evernote-service.js', () => {
         callback(err, mockOauthToken, mockOauthTokenSecret, result);
       });
 
-      evernoteService.getAccessToken(mockReq).then(oauthToken => {
+      evernoteService.getAccessToken(mockReq).then((oauthToken) => {
         expect(oauthToken).toBe(mockOauthToken);
         cb();
       });
     });
 
-    it('reject with error object', cb => {
+    it('reject with error object', (cb) => {
       // Mocking
       evernoteService.client.getAccessToken = jest.fn((oauthToken, oauthTokenSecret, oauthVerifier, callback) => {
         const result = {};
@@ -94,14 +94,14 @@ describe('evernote-service.js', () => {
 
       evernoteService.getAccessToken(mockReq).then(
         () => {},
-        err => {
+        (err) => {
           expect(err).toEqual(mockErrorObject);
           cb();
         }
       );
     });
 
-    it('reject without oauthToken', cb => {
+    it('reject without oauthToken', (cb) => {
       // Mocking
       evernoteService.client.getAccessToken = jest.fn((oauthToken, oauthTokenSecret, oauthVerifier, callback) => {
         const result = {};
@@ -110,7 +110,7 @@ describe('evernote-service.js', () => {
 
       evernoteService.getAccessToken(mockReq).then(
         () => {},
-        err => {
+        (err) => {
           expect(err).toEqual(mockErrorObjectNoToken);
           cb();
         }
@@ -123,7 +123,7 @@ describe('evernote-service.js', () => {
       // mock
       Evernote.Client = jest.fn().mockImplementation(() => {
         return {
-          method1: function() {
+          method1: function () {
             return 'foo';
           }
         };
@@ -195,7 +195,7 @@ describe('evernote-service.js', () => {
     const VALUE = 'value1';
     beforeEach(() => {
       evernoteService.getDiaryNotebook = jest.fn(() => NOTEBOOK);
-      evernoteService._makeImageNote = jest.fn(() => new Promise(resolve => resolve(VALUE)));
+      evernoteService._makeImageNote = jest.fn(() => new Promise((resolve) => resolve(VALUE)));
       dateService.splitDatasetByLastModified = jest.fn(() => SPLITED_LIST);
     });
     it('return promise', () => {
@@ -314,7 +314,7 @@ describe('evernote-service.js', () => {
       expect($sections.length).toBe(3);
     });
     describe('has updated "time" paragraph', () => {
-      const getTimeElements = lastModified => {
+      const getTimeElements = (lastModified) => {
         const dom = evernoteService._makeNewDom(initialDom, lastModified, mediaENML);
         return dom.window.document.querySelectorAll('[title="time"]');
       };
@@ -398,7 +398,7 @@ describe('evernote-service.js', () => {
     });
   });
 
-  describe('_removeUnnecessaryBreak', () => {
+  describe('_removeUnnecessaryElements', () => {
     it('remove "<hr>" and "<br>" before "</en-media>"', () => {
       const content = `
       abc<hr></en-media>
@@ -428,22 +428,33 @@ describe('evernote-service.js', () => {
       abc</en-media>
       ABC</en-media>
       `;
-      expect(evernoteService._removeUnnecessaryBreak(content)).toBe(expected);
+      expect(evernoteService._removeUnnecessaryElements(content)).toBe(expected);
     });
     it('remove "&nbsp;" before "</en-media>"', () => {
       const content = `abc&nbsp;&nbsp;</en-media>`;
       const expected = `abc</en-media>`;
-      expect(evernoteService._removeUnnecessaryBreak(content)).toBe(expected);
+      expect(evernoteService._removeUnnecessaryElements(content)).toBe(expected);
+    });
+    it('remove "</en-todo>"', () => {
+      const content = `
+      <div><en-todo checked="true">Todo 1</en-todo></div>
+      <div><en-todo checked="false">Todo 2</en-todo></div>
+      `;
+      const expected = `
+      <div><en-todo checked="true" />Todo 1</div>
+      <div><en-todo checked="false" />Todo 2</div>
+      `;
+      expect(evernoteService._removeUnnecessaryElements(content)).toBe(expected);
     });
     it('remove close tag "</br>"', () => {
       const content = `abc<br></br>ABC<br></ br>`;
       const expected = `abc<br/>ABC<br/>`;
-      expect(evernoteService._removeUnnecessaryBreak(content)).toBe(expected);
+      expect(evernoteService._removeUnnecessaryElements(content)).toBe(expected);
     });
     it('remove close tag "</hr>"', () => {
       const content = `abc<hr></hr>ABC<hr></ hr>`;
       const expected = `abc<hr/>ABC<hr/>`;
-      expect(evernoteService._removeUnnecessaryBreak(content)).toBe(expected);
+      expect(evernoteService._removeUnnecessaryElements(content)).toBe(expected);
     });
   });
 });

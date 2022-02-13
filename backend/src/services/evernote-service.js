@@ -276,7 +276,7 @@ class EvernoteService {
     let nBody = '<?xml version="1.0" encoding="UTF-8"?>';
     nBody += '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">';
     nBody += bodyString;
-    nBody = this._removeUnnecessaryBreak(nBody);
+    nBody = this._removeUnnecessaryElements(nBody);
 
     // Create note object
     const newNote = new Evernote.Types.Note();
@@ -288,12 +288,12 @@ class EvernoteService {
     return newNote;
   }
 
-  _removeUnnecessaryBreak(content) {
+  _removeUnnecessaryElements(content) {
     return content
       .replace(/(<[hb]r[^>]*>)+<\/en-media>/gi, '</en-media>')
       .replace(/(&nbsp;)+<\/en-media>/gi, '</en-media>')
       .replace(/<\/en-todo>/gi, '')
-      .replace(/<en-todo([^>]*)>/gi, '<en-todo$1/>')
+      .replace(/<en-todo([^>]*)>/gi, '<en-todo$1 />')
       .replace(/<br>(<\/\s?br>)?/gi, '<br/>')
       .replace(/<hr>(<\/\s?hr>)?/gi, '<hr/>');
   }
