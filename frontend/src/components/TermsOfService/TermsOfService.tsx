@@ -71,7 +71,7 @@ export const TermsOfService: React.FC<IProps> = () => {
       'これらのポリシーに抵抗がある方はご利用なさらないでください。なお、サービスのソースコードはオープンソースで公開しています。もしコードを読める方はソースを読めばそのような実装になっていることは確認できますし、Evernote API Key を取得しさえすればご自身でこのサービスを動作させることができます。',
       [
         'このサービス自体の所有権と著作権は管理人である ',
-        <a href="https://github.com/seckie" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/seckie" target="_blank" rel="noopener noreferrer" key="key-author">
           Naoki Sekiguchi
         </a>,
         ' に帰属しますが、あなたがアップロードしたコンテンツや、あなたのEvernoteコンテンツについての所有権と著作権はあなたにあります。後者について管理人は一切関知しません。'
@@ -79,7 +79,12 @@ export const TermsOfService: React.FC<IProps> = () => {
       'あなたがこのサービスを使うことによって被ったいかなる結果も、管理人は責任を持ちません。自己責任でご利用ください。',
       [
         'もしサービスやプログラムの不具合を見つけたら ',
-        <a href="https://github.com/seckie/lazy-image-diary/issues" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://github.com/seckie/lazy-image-diary/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          key="key-issue"
+        >
           GitHub の Issue
         </a>,
         ' でご報告いただけると管理人は喜びます。'
