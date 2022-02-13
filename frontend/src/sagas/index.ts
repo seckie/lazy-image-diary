@@ -18,19 +18,19 @@ import { IFileData } from '../models/';
 import { readFile, uploadFile } from '../services/file';
 import { IAction } from '../reducers';
 
-export function* signIn() {
+export function* signIn(): Generator<any, any, any> {
   const res: AxiosResponse = yield call(apiSignIn);
   yield put({ type: SIGN_IN_SUCCESS, payload: res.data });
 }
 
-export function* oauthCallback() {
+export function* oauthCallback(): Generator<any, any, any> {
   const res: AxiosResponse = yield call(apiOAuthCallback);
   window.sessionStorage.setItem('accessToken', res.data.accessToken);
   window.sessionStorage.setItem('user', res.data.user);
   yield put({ type: OAUTH_CALLBACK_SUCCESS, payload: res.data });
 }
 
-export function* readFilesFromField(action: IFileFieldOnChangeAction) {
+export function* readFilesFromField(action: IFileFieldOnChangeAction): Generator<any, any, any> {
   const files: File[] = action && action.payload && action.payload.files;
   if (!files || !files[0]) {
     return;
@@ -51,31 +51,37 @@ export function* readFilesFromField(action: IFileFieldOnChangeAction) {
       };
       yield put(action);
     }
-  } catch (e) {
+  } catch (e: any) {
     const payload = {
-      message: e.message
+      message: typeof e === 'object' ? e.message : ''
     };
     yield put({ type: FILE_HANDLE_ERROR, payload });
   }
 }
 
-export function* uploadFilesSaga(action: IUploadAction) {
+export function* uploadFilesSaga(action: IUploadAction): Generator<any, any, any> {
   const fileDataset: IFileData[] = action && action.payload && action.payload.fileDataset;
   const token: string = `Bearer ${window.sessionStorage.getItem('accessToken')}`;
   if (!fileDataset || !fileDataset[0]) {
     return;
   }
   try {
-    const files: File[] = fileDataset.map(fileData => fileData.file);
+    const files: File[] = fileDataset.map((fileData) => fileData.file);
     yield put({ type: UPLOAD_STARTED });
     yield call(uploadFile, files, token);
     yield put({
       type: UPLOAD_COMPLETE,
       payload: { uploadedFileDataset: fileDataset }
     });
-  } catch (e) {
+  } catch (e: any) {
+    let message = '';
+    if (e && e.response) {
+      message = e.response.data;
+    } else if (e && e.message) {
+      message = e.message;
+    }
     const payload = {
-      message: e.response.data
+      message,
     };
     yield put({ type: FILE_HANDLE_ERROR, payload });
   }
