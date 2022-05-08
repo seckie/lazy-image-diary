@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import history from 'history';
@@ -51,19 +51,35 @@ interface IProps {
   history: history.History;
 }
 
-export const CreateDiary: React.FC<IProps> = props => {
+export const CreateDiary: React.FC<IProps> = (props) => {
+  const {
+    onChange,
+    onSubmit,
+    fileDataset,
+    history,
+    errorMessages,
+    user,
+    isUploading,
+    resultMessages,
+    uploadedFileDataset
+  } = props;
+
   useEffect(() => {
     if (!window.sessionStorage.getItem('accessToken')) {
-      props.history.replace('/');
+      history.replace('/');
     }
-  });
+  }, [history]);
 
-  const onClickUpload = () => {
-    props.onSubmit(props.fileDataset);
-  };
+  const onClickUpload = useCallback(() => {
+    onSubmit(fileDataset);
+  }, [onSubmit, fileDataset]);
 
-  if (props.errorMessages[0]) {
-    props.errorMessages.forEach(message => {
+  // const changeHandler = useCallback((e: any) => {
+  //   onChange(e);
+  // }, [onChange]);
+
+  if (errorMessages[0]) {
+    errorMessages.forEach((message) => {
       toast.error(message, toastOptions);
     });
   }
@@ -72,18 +88,18 @@ export const CreateDiary: React.FC<IProps> = props => {
     <div className="app">
       <header className="globalHeader">
         <Logo href="/" />
-        {props.user && <UserInfo evernoteID={props.user.name} />}
+        {user && <UserInfo evernoteID={user.name} />}
       </header>
       <div className="uploadUI1">
-        <UploadInput onChange={props.onChange} />
+        <UploadInput onChange={onChange} />
         <Notes items={noteItems} />
       </div>
       <div className="uploadUI2">
-        <Button label="アップロード" disabled={props.isUploading} onClick={onClickUpload} />
-        <Messages messages={props.resultMessages} />
+        <Button label="アップロード" disabled={isUploading} onClick={onClickUpload} />
+        <Messages messages={resultMessages} />
       </div>
-      <MediaList dataset={props.fileDataset} isUploading={props.isUploading} />
-      <UploadedMediaList dataset={props.uploadedFileDataset} />
+      <MediaList dataset={fileDataset} isUploading={isUploading} />
+      <UploadedMediaList dataset={uploadedFileDataset} />
       <ToastContainer
         position="bottom-right"
         autoClose={false}
@@ -101,7 +117,4 @@ CreateDiary.defaultProps = {
   errorMessages: []
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CreateDiary);
+export default connect(mapStateToProps, mapDispatchToProps)(CreateDiary);
