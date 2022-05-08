@@ -55,3 +55,10 @@ a {
 .uploadUI2 {
   width: 494px;
 }
+.loaded-count {
+  flex-basis: 100%;
+  margin: 0;
+  min-height: 1.2em;
+  line-height: 1.2;
+  text-align: right;
+}
