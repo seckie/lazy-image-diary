@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import history from 'history';
@@ -52,6 +52,8 @@ interface IProps {
 }
 
 export const CreateDiary: React.FC<IProps> = (props) => {
+  const [totalCount, setTotalCount] = useState<number>();
+
   const {
     onChange,
     onSubmit,
@@ -74,9 +76,19 @@ export const CreateDiary: React.FC<IProps> = (props) => {
     onSubmit(fileDataset);
   }, [onSubmit, fileDataset]);
 
-  // const changeHandler = useCallback((e: any) => {
-  //   onChange(e);
-  // }, [onChange]);
+  const changeHandler = useCallback(
+    (e: React.FormEvent) => {
+      const el = e.currentTarget as HTMLInputElement;
+      const files = el && el.files;
+      if (files) {
+        setTotalCount(files.length);
+      } else {
+        setTotalCount(undefined);
+      }
+      onChange(e);
+    },
+    [onChange]
+  );
 
   if (errorMessages[0]) {
     errorMessages.forEach((message) => {
@@ -91,13 +103,14 @@ export const CreateDiary: React.FC<IProps> = (props) => {
         {user && <UserInfo evernoteID={user.name} />}
       </header>
       <div className="uploadUI1">
-        <UploadInput onChange={onChange} />
+        <UploadInput onChange={changeHandler} />
         <Notes items={noteItems} />
       </div>
       <div className="uploadUI2">
         <Button label="アップロード" disabled={isUploading} onClick={onClickUpload} />
         <Messages messages={resultMessages} />
       </div>
+      <p className="loaded-count">{totalCount && `${fileDataset.length} / ${totalCount}`}</p>
       <MediaList dataset={fileDataset} isUploading={isUploading} />
       <UploadedMediaList dataset={uploadedFileDataset} />
       <ToastContainer
